@@ -13,6 +13,12 @@ class AppColors {
 }
 
 class AppTheme {
+  /// Police des titres et des montants.
+  static const fontTitre = 'Fraunces';
+
+  /// Police du texte courant.
+  static const fontTexte = 'DMSans';
+
   static ThemeData get light {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.noyer,
@@ -28,6 +34,7 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: fontTexte,
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.creme,
       appBarTheme: const AppBarTheme(
@@ -36,6 +43,12 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
+        titleTextStyle: TextStyle(
+          fontFamily: fontTitre,
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: AppColors.cacao,
+        ),
       ),
       cardTheme: CardThemeData(
         color: AppColors.blanc,

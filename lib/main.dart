@@ -45,13 +45,14 @@ class HomePage extends StatelessWidget {
             style: text.labelMedium?.copyWith(
               letterSpacing: 1.2,
               color: AppColors.noyer,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             '1 250 000 Ar',
             style: TextStyle(
-              fontFamily: 'serif',
+              fontFamily: AppTheme.fontTitre,
               fontSize: 38,
               fontWeight: FontWeight.w600,
               color: AppColors.cacao,
@@ -110,7 +111,7 @@ class _Ligne extends StatelessWidget {
         Text(
           montant,
           style: TextStyle(
-            fontFamily: 'serif',
+            fontFamily: AppTheme.fontTitre,
             fontWeight: FontWeight.w600,
             color: couleur,
           ),
