@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/app_theme.dart';
+import 'data/app_database.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppDatabase.instance.database;
   runApp(const GestionArgentApp());
 }
 
@@ -84,6 +87,19 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 24),
+          FutureBuilder<String>(
+            future: AppDatabase.instance.resume(),
+            builder: (context, snapshot) {
+              final message = snapshot.hasError
+                  ? 'Erreur : ${snapshot.error}'
+                  : snapshot.data ?? 'Ouverture de la base de données…';
+              return Text(
+                message,
+                style: text.bodySmall?.copyWith(color: AppColors.noyer),
+              );
+            },
           ),
         ],
       ),
