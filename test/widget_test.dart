@@ -1,9 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gestion_argent/main.dart';
+import 'package:gestion_argent/core/formats.dart';
 
 void main() {
-  testWidgets("L'accueil affiche le titre", (WidgetTester tester) async {
-    await tester.pumpWidget(const GestionArgentApp());
-    expect(find.text("Gestion d'argent"), findsWidgets);
+  test('formatAr affiche les montants en Ariary', () {
+    expect(formatAr(1250000), '1\u00A0250\u00A0000\u00A0Ar');
+    expect(formatAr(0), '0\u00A0Ar');
+    expect(formatAr(-25000), '-25\u00A0000\u00A0Ar');
   });
 }
