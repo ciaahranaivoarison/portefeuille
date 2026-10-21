@@ -4,6 +4,7 @@ import '../../core/app_theme.dart';
 import '../../core/formats.dart';
 import '../../data/repository.dart';
 import '../add_operation/add_operation_page.dart';
+import '../settings/settings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,7 +41,18 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text("Gestion d'argent")),
+      appBar: AppBar(
+        title: const Text("Gestion d'argent"),
+        actions: [
+          IconButton(
+            tooltip: 'Paramètres',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SettingsPage()),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.noyer,
         foregroundColor: AppColors.blanc,
