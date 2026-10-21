@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// Demande une confirmation avant de supprimer une opération.
-Future<bool> confirmerSuppression(BuildContext context) async {
+/// Demande une confirmation avant de supprimer quelque chose.
+Future<bool> confirmerSuppression(
+  BuildContext context, {
+  String titre = 'Supprimer cette opération ?',
+  String message = 'Les soldes seront recalculés automatiquement.',
+}) async {
   final reponse = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Supprimer cette opération ?'),
-      content: const Text('Les soldes seront recalculés automatiquement.'),
+      title: Text(titre),
+      content: Text(message),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(ctx).pop(false),

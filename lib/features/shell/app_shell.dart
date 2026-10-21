@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_theme.dart';
+import '../accounts/accounts_page.dart';
 import '../history/history_page.dart';
 import '../home/home_page.dart';
 
@@ -17,8 +18,9 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    const pages = <Widget>[HomePage(), AccountsPage(), HistoryPage()];
     return Scaffold(
-      body: _index == 0 ? const HomePage() : const HistoryPage(),
+      body: pages[_index],
       bottomNavigationBar: NavigationBar(
         backgroundColor: AppColors.blanc,
         indicatorColor: AppColors.sable,
@@ -29,6 +31,11 @@ class _AppShellState extends State<AppShell> {
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Accueil',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet),
+            label: 'Comptes',
           ),
           NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
