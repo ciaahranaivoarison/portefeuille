@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/app_theme.dart';
 import '../../core/formats.dart';
 import '../../data/repository.dart';
+import '../add_operation/add_operation_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,6 +41,18 @@ class _HomePageState extends State<HomePage> {
     final text = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(title: const Text("Gestion d'argent")),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppColors.noyer,
+        foregroundColor: AppColors.blanc,
+        onPressed: () async {
+          final ajoute = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(builder: (_) => const AddOperationPage()),
+          );
+          if (ajoute == true) _rafraichir();
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Ajouter'),
+      ),
       body: FutureBuilder<_Donnees>(
         future: _futur,
         builder: (context, snapshot) {
@@ -51,7 +64,7 @@ class _HomePageState extends State<HomePage> {
           }
           final d = snapshot.data!;
           return ListView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
             children: [
               Text(
                 'ARGENT TOTAL DISPONIBLE',
