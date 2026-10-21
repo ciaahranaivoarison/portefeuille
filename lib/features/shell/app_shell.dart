@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_theme.dart';
 import '../accounts/accounts_page.dart';
+import '../budgets/budgets_page.dart';
 import '../history/history_page.dart';
 import '../home/home_page.dart';
 
@@ -18,7 +19,12 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    const pages = <Widget>[HomePage(), AccountsPage(), HistoryPage()];
+    const pages = <Widget>[
+      HomePage(),
+      AccountsPage(),
+      HistoryPage(),
+      BudgetsPage(),
+    ];
     return Scaffold(
       body: pages[_index],
       bottomNavigationBar: NavigationBar(
@@ -41,6 +47,11 @@ class _AppShellState extends State<AppShell> {
             icon: Icon(Icons.receipt_long_outlined),
             selectedIcon: Icon(Icons.receipt_long),
             label: 'Historique',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.savings_outlined),
+            selectedIcon: Icon(Icons.savings),
+            label: 'Budgets',
           ),
         ],
       ),
