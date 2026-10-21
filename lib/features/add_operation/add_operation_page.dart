@@ -4,16 +4,20 @@ import 'package:flutter/services.dart';
 import '../../core/app_theme.dart';
 import '../../data/operations.dart';
 import '../../data/repository.dart';
+import '../../widgets/confirm_dialog.dart';
 
 class AddOperationPage extends StatefulWidget {
-  const AddOperationPage({super.key});
+  const AddOperationPage({super.key, this.transaction});
+
+  /// Si elle est fournie, l'écran sert à modifier cette opération.
+  final TransactionItem? transaction;
 
   @override
   State<AddOperationPage> createState() => _AddOperationPageState();
 }
 
 class _AddOperationPageState extends State<AddOperationPage> {
-    String _type = 'income'; // 'income', 'expense' ou 'transfer'
+  String _type = 'income'; // 'income', 'expense' ou 'transfer'
   List<AccountBalance> _comptes = [];
   List<Category> _categories = [];
   int? _compteId;
@@ -24,11 +28,23 @@ class _AddOperationPageState extends State<AddOperationPage> {
   final _montantCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
 
+  bool get _modification => widget.transaction != null;
+
   @override
   void initState() {
     super.initState();
+    final t = widget.transaction;
+    if (t != null) {
+      _type = t.type;
+      _compteId = t.accountId;
+      _versCompteId = t.toAccountId;
+      _categorieId = t.categoryId;
+      _date = t.date;
+      _montantCtrl.text = t.amount.toString();
+      _noteCtrl.text = t.note ?? '';
+    }
     _chargerComptes();
-    _chargerCategories();
+    _chargerCategories(garder: true);
   }
 
   @override
@@ -43,11 +59,13 @@ class _AddOperationPageState extends State<AddOperationPage> {
     if (!mounted) return;
     setState(() {
       _comptes = comptes;
-      if (comptes.isNotEmpty) _compteId = comptes.first.id;
+      if (comptes.isNotEmpty && _compteId == null) {
+        _compteId = comptes.first.id;
+      }
     });
   }
 
-  Future<void> _chargerCategories() async {
+  Future<void> _chargerCategories({bool garder = false}) async {
     if (_type == 'transfer') {
       setState(() => _categories = []);
       return;
@@ -56,7 +74,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
     if (!mounted) return;
     setState(() {
       _categories = categories;
-      _categorieId = null;
+      if (!garder) _categorieId = null;
     });
   }
 
@@ -107,20 +125,41 @@ class _AddOperationPageState extends State<AddOperationPage> {
     }
 
     try {
-      await Operations.instance.ajouter(
-        type: _type,
-        montant: montant,
-        compteId: _compteId!,
-        versCompteId: _versCompteId,
-        categorieId: _categorieId,
-        date: _date,
-        note: _noteCtrl.text,
-      );
+      if (_modification) {
+        await Operations.instance.modifier(
+          id: widget.transaction!.id,
+          type: _type,
+          montant: montant,
+          compteId: _compteId!,
+          versCompteId: _versCompteId,
+          categorieId: _categorieId,
+          date: _date,
+          note: _noteCtrl.text,
+        );
+      } else {
+        await Operations.instance.ajouter(
+          type: _type,
+          montant: montant,
+          compteId: _compteId!,
+          versCompteId: _versCompteId,
+          categorieId: _categorieId,
+          date: _date,
+          note: _noteCtrl.text,
+        );
+      }
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } on ArgumentError catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('${e.message}')));
     }
+  }
+
+  Future<void> _supprimer() async {
+    final ok = await confirmerSuppression(context);
+    if (!ok) return;
+    await Operations.instance.supprimer(widget.transaction!.id);
+    if (!mounted) return;
+    Navigator.of(context).pop(true);
   }
 
   Widget _titre(String texte) => Padding(
@@ -154,14 +193,26 @@ class _AddOperationPageState extends State<AddOperationPage> {
   Widget build(BuildContext context) {
     final transfert = _type == 'transfer';
     return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle opération')),
+      appBar: AppBar(
+        title: Text(
+          _modification ? "Modifier l'opération" : 'Nouvelle opération',
+        ),
+        actions: [
+          if (_modification)
+            IconButton(
+              tooltip: 'Supprimer',
+              icon: const Icon(Icons.delete_outline),
+              onPressed: _supprimer,
+            ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           SegmentedButton<String>(
             segments: const [
-              ButtonSegment(value: 'expense', label: Text('Revenu')),
-              ButtonSegment(value: 'income', label: Text('Dépense')),
+              ButtonSegment(value: 'income', label: Text('Revenu')),
+              ButtonSegment(value: 'expense', label: Text('Dépense')),
               ButtonSegment(value: 'transfer', label: Text('Transfert')),
             ],
             selected: {_type},

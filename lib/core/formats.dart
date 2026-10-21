@@ -9,3 +9,8 @@ String formatAr(int montant) {
   }
   return '${negatif ? '-' : ''}$buffer\u00A0Ar';
 }
+
+/// Affiche une date au format jj/mm/aaaa.
+String formatDate(DateTime d) =>
+    '${d.day.toString().padLeft(2, '0')}/'
+    '${d.month.toString().padLeft(2, '0')}/${d.year}';
