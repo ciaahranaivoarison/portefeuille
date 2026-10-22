@@ -5,6 +5,7 @@ import '../accounts/accounts_page.dart';
 import '../budgets/budgets_page.dart';
 import '../history/history_page.dart';
 import '../home/home_page.dart';
+import '../stats/stats_page.dart';
 
 /// Structure principale : le contenu et la barre de navigation du bas.
 class AppShell extends StatefulWidget {
@@ -24,6 +25,7 @@ class _AppShellState extends State<AppShell> {
       AccountsPage(),
       HistoryPage(),
       BudgetsPage(),
+      StatsPage(),
     ];
     return Scaffold(
       body: pages[_index],
@@ -52,6 +54,11 @@ class _AppShellState extends State<AppShell> {
             icon: Icon(Icons.savings_outlined),
             selectedIcon: Icon(Icons.savings),
             label: 'Budgets',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bar_chart_outlined),
+            selectedIcon: Icon(Icons.bar_chart),
+            label: 'Stats',
           ),
         ],
       ),
