@@ -5,9 +5,10 @@ import '../../core/app_theme.dart';
 import '../../core/security_service.dart';
 import '../categories/categories_page.dart';
 import '../lock/lock_screen.dart';
+import 'backup_page.dart';
 import 'protection_setup_page.dart';
 
-/// Écran Paramètres : protection de l'application et catégories.
+/// Écran Paramètres : protection, catégories, sauvegarde et restauration.
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -195,24 +196,46 @@ class _SettingsPageState extends State<SettingsPage> {
                 const SizedBox(height: 16),
                 _titre('Gestion'),
                 Card(
-                  child: ListTile(
-                    leading: const Icon(
-                      Icons.category_outlined,
-                      color: AppColors.noyer,
-                    ),
-                    title: const Text(
-                      'Catégories',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    subtitle: const Text(
-                      'Ajouter, modifier ou supprimer vos catégories',
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const CategoriesPage(),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(
+                          Icons.category_outlined,
+                          color: AppColors.noyer,
+                        ),
+                        title: const Text(
+                          'Catégories',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        subtitle: const Text(
+                          'Ajouter, modifier ou supprimer vos catégories',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const CategoriesPage(),
+                          ),
+                        ),
                       ),
-                    ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.backup_outlined,
+                          color: AppColors.noyer,
+                        ),
+                        title: const Text(
+                          'Sauvegarde et restauration',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        subtitle: const Text(
+                          'Sauvegarder vos données ou les restaurer',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const BackupPage()),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
