@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/emojis.dart';
 import '../../core/formats.dart';
 import '../../data/budgets.dart';
+import '../../widgets/etat_vide.dart';
 import 'budget_form_page.dart';
 
 class BudgetsPage extends StatefulWidget {
@@ -89,7 +91,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      b.categoryName,
+                      '${emojiCategorie(b.categoryName)} ${b.categoryName}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
@@ -183,15 +185,10 @@ class _BudgetsPageState extends State<BudgetsPage> {
                 }
                 final budgets = snapshot.data!;
                 if (budgets.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Text(
-                        'Aucun budget défini.\n'
-                        'Appuyez sur « Nouveau budget » pour en définir un.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                  return const EtatVide(
+                    titre: 'Aucun budget défini',
+                    message: 'Appuyez sur « Nouveau budget » pour fixer '
+                        'une limite mensuelle par catégorie.',
                   );
                 }
                 return ListView(

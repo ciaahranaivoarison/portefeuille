@@ -21,9 +21,9 @@ dependencies:
   local_auth: any
   flutter_secure_storage: any
   crypto: any
-  share_plus: 13.3.1
-  file_picker: 13.1.0
-  cross_file: 0.3.5+5
+  share_plus: ^13.3.1
+  file_picker: ^13.1.0
+  cross_file: ^0.3.5+5
 
 dev_dependencies:
   flutter_test:
@@ -32,6 +32,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/
 
   fonts:
     - family: Fraunces

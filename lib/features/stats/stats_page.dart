@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/emojis.dart';
 import '../../core/formats.dart';
 import '../../data/budgets.dart';
 import '../../data/stats.dart';
@@ -72,7 +73,8 @@ class _StatsPageState extends State<StatsPage> {
       case 'jour':
         return (jour, jour);
       case 'semaine':
-        final lundi = DateTime(jour.year, jour.month, jour.day - (jour.weekday - 1));
+        final lundi =
+            DateTime(jour.year, jour.month, jour.day - (jour.weekday - 1));
         return (lundi, DateTime(lundi.year, lundi.month, lundi.day + 6));
       case 'precedent':
         return (
@@ -211,7 +213,7 @@ class _StatsPageState extends State<StatsPage> {
             ),
           ),
           const SizedBox(width: 10),
-          Expanded(child: Text(c.name)),
+          Expanded(child: Text('${emojiCategorie(c.name)} ${c.name}')),
           Text(
             formatAr(c.amount),
             style: const TextStyle(
@@ -325,8 +327,9 @@ class _StatsPageState extends State<StatsPage> {
                       return const SizedBox.shrink();
                     }
                     final p = points[i];
-                    final label =
-                        s.monthly ? _moisCourt[p.date.month - 1] : '${p.date.day}';
+                    final label = s.monthly
+                        ? _moisCourt[p.date.month - 1]
+                        : '${p.date.day}';
                     return Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(

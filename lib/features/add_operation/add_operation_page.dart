@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/emojis.dart';
 import '../../data/operations.dart';
 import '../../data/repository.dart';
 import '../../widgets/confirm_dialog.dart';
@@ -259,7 +260,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
               runSpacing: 8,
               children: [
                 for (final c in _categories)
-                  _chip(c.name, _categorieId == c.id,
+                  _chip('${emojiCategorie(c.name)} ${c.name}',
+                      _categorieId == c.id,
                       () => setState(() => _categorieId = c.id)),
               ],
             ),

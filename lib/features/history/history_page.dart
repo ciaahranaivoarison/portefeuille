@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/emojis.dart';
 import '../../core/formats.dart';
 import '../../data/operations.dart';
 import '../../data/repository.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/etat_vide.dart';
 import '../add_operation/add_operation_page.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -161,6 +163,7 @@ class _HistoryPageState extends State<HistoryPage> {
     final titre = t.type == 'transfer'
         ? 'Transfert'
         : (t.categoryName ?? 'Sans catégorie');
+    final emoji = t.type == 'transfer' ? '🔁' : emojiCategorie(t.categoryName);
     final compte = t.type == 'transfer'
         ? '${t.accountName} → ${t.toAccountName ?? ''}'
         : t.accountName;
@@ -191,7 +194,7 @@ class _HistoryPageState extends State<HistoryPage> {
           child: ListTile(
             onTap: () => _modifier(t),
             title: Text(
-              titre,
+              '$emoji $titre',
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             subtitle: Text(details, maxLines: 2),
@@ -312,7 +315,11 @@ class _HistoryPageState extends State<HistoryPage> {
             child: _chargement
                 ? const Center(child: CircularProgressIndicator())
                 : _items.isEmpty
-                    ? const Center(child: Text('Aucune opération'))
+                    ? const EtatVide(
+                        titre: 'Aucune opération',
+                        message: "Appuyez sur « Ajouter » à l'accueil pour "
+                            'saisir votre première opération.',
+                      )
                     : ListView.builder(
                         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                         itemCount: _items.length,

@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/formats.dart';
 import '../../data/repository.dart';
+import '../../widgets/banniere_image.dart';
 import '../add_operation/add_operation_page.dart';
 import '../settings/settings_page.dart';
 
@@ -21,6 +23,12 @@ class _Donnees {
 
   int get total => comptes.fold(0, (somme, c) => somme + c.balance);
 }
+
+IconData _iconeCompte(String type) => switch (type) {
+      'cash' => Icons.payments_outlined,
+      'bank' => Icons.account_balance_outlined,
+      _ => Icons.smartphone_outlined,
+    };
 
 class _HomePageState extends State<HomePage> {
   late Future<_Donnees> _futur = _charger();
@@ -76,27 +84,37 @@ class _HomePageState extends State<HomePage> {
           }
           final d = snapshot.data!;
           return ListView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
             children: [
-              Text(
-                'ARGENT TOTAL DISPONIBLE',
-                style: text.labelMedium?.copyWith(
-                  letterSpacing: 1.2,
-                  color: AppColors.noyer,
-                  fontWeight: FontWeight.w700,
+              BanniereImage(
+                asset: 'assets/images/accueil.jpg',
+                hauteur: 190,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ARGENT TOTAL DISPONIBLE',
+                      style: text.labelMedium?.copyWith(
+                        letterSpacing: 1.2,
+                        color: AppColors.sable,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      formatAr(d.total),
+                      style: const TextStyle(
+                        fontFamily: AppTheme.fontTitre,
+                        fontSize: 38,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.creme,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                formatAr(d.total),
-                style: const TextStyle(
-                  fontFamily: AppTheme.fontTitre,
-                  fontSize: 38,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.cacao,
-                ),
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -141,6 +159,7 @@ class _HomePageState extends State<HomePage> {
                       for (var i = 0; i < d.comptes.length; i++) ...[
                         if (i > 0) const Divider(height: 24),
                         _Ligne(
+                          icone: _iconeCompte(d.comptes[i].type),
                           label: d.comptes[i].name,
                           montant: formatAr(d.comptes[i].balance),
                           couleur: d.comptes[i].balance < 0
@@ -152,26 +171,30 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
-              Text(
-                'Boutons provisoires de test',
-                style: text.bodySmall?.copyWith(color: AppColors.noyer),
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton(
-                onPressed: () async {
-                  await Repository.instance.chargerExemple();
-                  _rafraichir();
-                },
-                child: const Text("Charger l'exemple de la fiche"),
-              ),
-              TextButton(
-                onPressed: () async {
-                  await Repository.instance.viderOperations();
-                  _rafraichir();
-                },
-                child: const Text('Effacer les opérations de test'),
-              ),
+              // Visible seulement pendant le développement (flutter run).
+              // La version finale de l'application ne contient pas ces boutons.
+              if (kDebugMode) ...[
+                const SizedBox(height: 32),
+                Text(
+                  'Mode développement (absent de la version finale)',
+                  style: text.bodySmall?.copyWith(color: AppColors.noyer),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: () async {
+                    await Repository.instance.chargerExemple();
+                    _rafraichir();
+                  },
+                  child: const Text("Charger l'exemple de la fiche"),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    await Repository.instance.viderOperations();
+                    _rafraichir();
+                  },
+                  child: const Text('Effacer les opérations de test'),
+                ),
+              ],
             ],
           );
         },
@@ -185,18 +208,23 @@ class _Ligne extends StatelessWidget {
     required this.label,
     required this.montant,
     required this.couleur,
+    this.icone,
   });
 
   final String label;
   final String montant;
   final Color couleur;
+  final IconData? icone;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label),
+        if (icone != null) ...[
+          Icon(icone, size: 20, color: AppColors.noyer),
+          const SizedBox(width: 10),
+        ],
+        Expanded(child: Text(label)),
         Text(
           montant,
           style: TextStyle(

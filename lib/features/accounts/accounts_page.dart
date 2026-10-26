@@ -4,6 +4,8 @@ import '../../core/app_theme.dart';
 import '../../core/formats.dart';
 import '../../data/accounts.dart';
 import '../../data/repository.dart';
+import '../../widgets/banniere_image.dart';
+import '../../widgets/etat_vide.dart';
 import 'account_form_page.dart';
 
 class AccountsPage extends StatefulWidget {
@@ -59,31 +61,41 @@ class _AccountsPageState extends State<AccountsPage> {
           final comptes = snapshot.data!;
           final total = comptes.fold(0, (somme, c) => somme + c.balance);
           return ListView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 96),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
             children: [
-              Text(
-                'TOTAL DE TOUS LES COMPTES',
-                style: text.labelMedium?.copyWith(
-                  letterSpacing: 1.2,
-                  color: AppColors.noyer,
-                  fontWeight: FontWeight.w700,
+              BanniereImage(
+                asset: 'assets/images/comptes.jpg',
+                hauteur: 150,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TOTAL DE TOUS LES COMPTES',
+                      style: text.labelMedium?.copyWith(
+                        letterSpacing: 1.2,
+                        color: AppColors.sable,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      formatAr(total),
+                      style: const TextStyle(
+                        fontFamily: AppTheme.fontTitre,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.creme,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                formatAr(total),
-                style: const TextStyle(
-                  fontFamily: AppTheme.fontTitre,
-                  fontSize: 30,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.cacao,
-                ),
-              ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               if (comptes.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 40),
-                  child: Center(child: Text('Aucun compte')),
+                const EtatVide(
+                  titre: 'Aucun compte',
+                  message: 'Appuyez sur « Nouveau compte » pour en créer un.',
                 ),
               for (final c in comptes)
                 Padding(

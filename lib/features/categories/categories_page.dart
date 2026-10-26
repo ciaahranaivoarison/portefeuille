@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/emojis.dart';
 import '../../data/categories.dart';
 import 'category_form_page.dart';
 
@@ -61,7 +62,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
             color: AppColors.noyer,
           ),
           title: Text(
-            c.name,
+            '${emojiCategorie(c.name)} ${c.name}',
             style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           subtitle: Text(
