@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_theme.dart';
-import '../../core/formats.dart';
+import '../../core/emojis.dart';
 import '../../data/accounts.dart';
 import '../../data/repository.dart';
-import '../../widgets/banniere_image.dart';
+import '../../widgets/entete_ecran.dart';
 import '../../widgets/etat_vide.dart';
+import '../../widgets/ui.dart';
 import 'account_form_page.dart';
 
 class AccountsPage extends StatefulWidget {
@@ -31,20 +32,66 @@ class _AccountsPageState extends State<AccountsPage> {
     if (change == true) _rafraichir();
   }
 
-  IconData _icone(String type) => switch (type) {
-        'cash' => Icons.payments_outlined,
-        'bank' => Icons.account_balance_outlined,
-        _ => Icons.smartphone_outlined,
-      };
+  Widget _contenu(AsyncSnapshot<List<AccountBalance>> snapshot) {
+    if (snapshot.hasError) {
+      return Center(child: Text('Erreur : ${snapshot.error}'));
+    }
+    final comptes = snapshot.data;
+    if (comptes == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (comptes.isEmpty) {
+      return const EtatVide(
+        titre: 'Aucun compte',
+        message: 'Appuyez sur « Nouveau compte » pour en créer un.',
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
+      children: [
+        for (var i = 0; i < comptes.length; i++)
+          Apparition(
+            key: ValueKey('compte${comptes[i].id}'),
+            index: i,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Card(
+                child: ListTile(
+                  onTap: () => _ouvrir(compteId: comptes[i].id),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  leading: PastilleEmoji(emojiCompte(comptes[i].type)),
+                  title: Text(
+                    comptes[i].name,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  subtitle: Text(libelleTypeCompte(comptes[i].type)),
+                  trailing: MontantAnime(
+                    montant: comptes[i].balance,
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontTitre,
+                      fontWeight: FontWeight.w600,
+                      color: comptes[i].balance < 0
+                          ? AppColors.terracotta
+                          : AppColors.cacao,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Comptes')),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.noyer,
-        foregroundColor: AppColors.blanc,
+        heroTag: null,
         onPressed: () => _ouvrir(),
         icon: const Icon(Icons.add),
         label: const Text('Nouveau compte'),
@@ -52,76 +99,17 @@ class _AccountsPageState extends State<AccountsPage> {
       body: FutureBuilder<List<AccountBalance>>(
         future: _futur,
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text('Erreur : ${snapshot.error}'));
-          }
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final comptes = snapshot.data!;
-          final total = comptes.fold(0, (somme, c) => somme + c.balance);
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+          final total = snapshot.data
+              ?.fold<int>(0, (somme, c) => somme + c.balance);
+          return Column(
             children: [
-              BanniereImage(
-                asset: 'assets/images/comptes.jpg',
-                hauteur: 150,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'TOTAL DE TOUS LES COMPTES',
-                      style: text.labelMedium?.copyWith(
-                        letterSpacing: 1.2,
-                        color: AppColors.sable,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      formatAr(total),
-                      style: const TextStyle(
-                        fontFamily: AppTheme.fontTitre,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.creme,
-                      ),
-                    ),
-                  ],
-                ),
+              EnteteEcran(
+                emoji: '💳',
+                titre: 'Comptes',
+                etiquette: 'TOTAL DE TOUS LES COMPTES',
+                montant: total,
               ),
-              const SizedBox(height: 16),
-              if (comptes.isEmpty)
-                const EtatVide(
-                  titre: 'Aucun compte',
-                  message: 'Appuyez sur « Nouveau compte » pour en créer un.',
-                ),
-              for (final c in comptes)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Card(
-                    child: ListTile(
-                      onTap: () => _ouvrir(compteId: c.id),
-                      leading: Icon(_icone(c.type), color: AppColors.noyer),
-                      title: Text(
-                        c.name,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      subtitle: Text(libelleTypeCompte(c.type)),
-                      trailing: Text(
-                        formatAr(c.balance),
-                        style: TextStyle(
-                          fontFamily: AppTheme.fontTitre,
-                          fontWeight: FontWeight.w600,
-                          color: c.balance < 0
-                              ? AppColors.terracotta
-                              : AppColors.cacao,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              Expanded(child: _contenu(snapshot)),
             ],
           );
         },

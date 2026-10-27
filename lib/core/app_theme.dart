@@ -30,6 +30,15 @@ class AppTheme {
       surface: AppColors.blanc,
       onSurface: AppColors.cacao,
       error: AppColors.terracotta,
+      outline: AppColors.sable,
+    );
+
+    final bordure = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.sable),
+    );
+    final formeBouton = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
     );
 
     return ThemeData(
@@ -37,6 +46,12 @@ class AppTheme {
       fontFamily: fontTexte,
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.creme,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: ZoomPageTransitionsBuilder(),
+          //TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.creme,
         foregroundColor: AppColors.cacao,
@@ -54,14 +69,121 @@ class AppTheme {
         color: AppColors.blanc,
         elevation: 0,
         margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.sable),
         ),
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.sable,
         thickness: 1,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.blanc,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: bordure,
+        enabledBorder: bordure,
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.noyer, width: 1.6),
+        ),
+        hintStyle: const TextStyle(color: Color(0xFFA8957F)),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.noyer,
+          foregroundColor: AppColors.blanc,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          shape: formeBouton,
+          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.noyer,
+          side: BorderSide(color: AppColors.noyer.withValues(alpha: 0.55)),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+          shape: formeBouton,
+          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.noyer,
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.noyer,
+        foregroundColor: AppColors.blanc,
+        elevation: 3,
+        extendedTextStyle: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 15,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.cacao,
+        behavior: SnackBarBehavior.floating,
+        contentTextStyle: const TextStyle(
+          color: AppColors.creme,
+          fontFamily: fontTexte,
+          fontSize: 14,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.blanc,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        titleTextStyle: const TextStyle(
+          fontFamily: fontTitre,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: AppColors.cacao,
+        ),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.noyer,
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+            (etats) => etats.contains(WidgetState.selected)
+                ? AppColors.noyer
+                : AppColors.blanc,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith<Color?>(
+            (etats) => etats.contains(WidgetState.selected)
+                ? AppColors.blanc
+                : AppColors.cacao,
+          ),
+          side: WidgetStateProperty.all(
+            const BorderSide(color: AppColors.sable),
+          ),
+        ),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith<Color?>(
+          (etats) => etats.contains(WidgetState.selected)
+              ? AppColors.blanc
+              : AppColors.noyer,
+        ),
+        trackColor: WidgetStateProperty.resolveWith<Color?>(
+          (etats) => etats.contains(WidgetState.selected)
+              ? AppColors.noyer
+              : AppColors.sable,
+        ),
+        trackOutlineColor: WidgetStateProperty.resolveWith<Color?>(
+          (etats) => etats.contains(WidgetState.selected)
+              ? Colors.transparent
+              : AppColors.noyer,
+        ),
       ),
     );
   }

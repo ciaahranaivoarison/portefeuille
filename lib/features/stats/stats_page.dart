@@ -6,6 +6,8 @@ import '../../core/emojis.dart';
 import '../../core/formats.dart';
 import '../../data/budgets.dart';
 import '../../data/stats.dart';
+import '../../widgets/entete_ecran.dart';
+import '../../widgets/ui.dart';
 
 const _periodes = [
   ('jour', "Aujourd'hui"),
@@ -109,18 +111,6 @@ class _StatsPageState extends State<StatsPage> {
     });
   }
 
-  Widget _titre(String texte) => Padding(
-        padding: const EdgeInsets.only(top: 26, bottom: 10),
-        child: Text(
-          texte.toUpperCase(),
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                letterSpacing: 1.2,
-                color: AppColors.noyer,
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-      );
-
   Widget _vide() => Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Text(
@@ -159,16 +149,23 @@ class _StatsPageState extends State<StatsPage> {
     );
   }
 
-  Widget _ligneResume(String label, int montant, Color couleur) {
+  Widget _ligneResume(String emoji, String label, int montant, Color couleur) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label),
-        Text(
-          formatAr(montant),
+        PastilleEmoji(emoji, taille: 38),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+        MontantAnime(
+          montant: montant,
           style: TextStyle(
             fontFamily: AppTheme.fontTitre,
             fontWeight: FontWeight.w600,
+            fontSize: 15,
             color: couleur,
           ),
         ),
@@ -179,14 +176,15 @@ class _StatsPageState extends State<StatsPage> {
   Widget _resume(PeriodStats s) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           children: [
-            _ligneResume('Revenus', s.income, AppColors.sauge),
-            const Divider(height: 24),
-            _ligneResume('Dépenses', s.expense, AppColors.terracotta),
-            const Divider(height: 24),
+            _ligneResume('💵', 'Revenus', s.income, AppColors.sauge),
+            const Divider(height: 26),
+            _ligneResume('💸', 'Dépenses', s.expense, AppColors.terracotta),
+            const Divider(height: 26),
             _ligneResume(
+              '⚖️',
               'Solde de la période',
               s.balance,
               s.balance < 0 ? AppColors.terracotta : AppColors.cacao,
@@ -209,7 +207,7 @@ class _StatsPageState extends State<StatsPage> {
             height: 12,
             decoration: BoxDecoration(
               color: _couleurs[i % _couleurs.length],
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(3),
             ),
           ),
           const SizedBox(width: 10),
@@ -353,7 +351,7 @@ class _StatsPageState extends State<StatsPage> {
                       toY: points[i].amount.toDouble(),
                       color: AppColors.noyer,
                       width: largeur,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                   ],
                 ),
@@ -379,23 +377,16 @@ class _StatsPageState extends State<StatsPage> {
         : '${formatDate(_debut)} → ${formatDate(_fin)}';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Statistiques')),
       body: Column(
         children: [
-          _selecteurPeriode(),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                plageTexte,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppColors.noyer),
-              ),
-            ),
+          EnteteEcran(
+            emoji: '📊',
+            titre: 'Statistiques',
+            sousTitre: plageTexte,
           ),
+          const SizedBox(height: 14),
+          _selecteurPeriode(),
+          const SizedBox(height: 4),
           Expanded(
             child: FutureBuilder<PeriodStats>(
               future: _futur,
@@ -403,18 +394,37 @@ class _StatsPageState extends State<StatsPage> {
                 if (snapshot.hasError) {
                   return Center(child: Text('Erreur : ${snapshot.error}'));
                 }
-                if (!snapshot.hasData) {
+                final s = snapshot.data;
+                if (s == null) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final s = snapshot.data!;
                 return ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                   children: [
-                    _resume(s),
-                    _titre('Dépenses par catégorie'),
-                    if (s.expense == 0) _vide() else ..._repartition(s),
-                    _titre('Évolution des dépenses'),
-                    if (s.expense == 0) _vide() else ..._evolution(s),
+                    Apparition(index: 0, child: _resume(s)),
+                    const Apparition(
+                      index: 1,
+                      child: TitreSection('Dépenses par catégorie'),
+                    ),
+                    Apparition(
+                      index: 2,
+                      child: Column(
+                        children: s.expense == 0
+                            ? [_vide()]
+                            : _repartition(s),
+                      ),
+                    ),
+                    const Apparition(
+                      index: 3,
+                      child: TitreSection('Évolution des dépenses'),
+                    ),
+                    Apparition(
+                      index: 4,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: s.expense == 0 ? [_vide()] : _evolution(s),
+                      ),
+                    ),
                   ],
                 );
               },

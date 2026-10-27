@@ -4,7 +4,9 @@ import '../../core/app_theme.dart';
 import '../../core/emojis.dart';
 import '../../core/formats.dart';
 import '../../data/budgets.dart';
+import '../../widgets/entete_ecran.dart';
 import '../../widgets/etat_vide.dart';
+import '../../widgets/ui.dart';
 import 'budget_form_page.dart';
 
 class BudgetsPage extends StatefulWidget {
@@ -74,59 +76,86 @@ class _BudgetsPageState extends State<BudgetsPage> {
     );
   }
 
-  Widget _carte(BudgetItem b) {
+  Widget _carte(BudgetItem b, int index) {
     final (couleur, message) = _etat(b);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Card(
-        child: InkWell(
-          borderRadius: BorderRadius.circular(6),
-          onTap: () => _ouvrir(budget: b),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${emojiCategorie(b.categoryName)} ${b.categoryName}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
+    final pourcentage = (b.ratio * 100).round();
+    final rempli = b.ratio > 1 ? 1.0 : b.ratio;
+
+    return Apparition(
+      key: ValueKey('budget${b.id}'),
+      index: index,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Card(
+          child: InkWell(
+            onTap: () => _ouvrir(budget: b),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      PastilleEmoji(emojiCategorie(b.categoryName), taille: 40),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          b.categoryName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
-                    ),
-                    Text(
-                      message,
-                      style: TextStyle(
-                        color: couleur,
-                        fontWeight: FontWeight.w700,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: couleur.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '$message · $pourcentage %',
+                          style: TextStyle(
+                            color: couleur,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 0, end: rempli),
+                    duration: const Duration(milliseconds: 900),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, valeur, _) => LinearProgressIndicator(
+                      value: valeur,
+                      minHeight: 9,
+                      color: couleur,
+                      backgroundColor: AppColors.sable,
+                      borderRadius: BorderRadius.circular(5),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                LinearProgressIndicator(
-                  value: b.ratio.clamp(0.0, 1.0),
-                  minHeight: 8,
-                  color: couleur,
-                  backgroundColor: AppColors.sable,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    _chiffre('Prévu', formatAr(b.amount), AppColors.cacao),
-                    _chiffre('Dépensé', formatAr(b.spent), couleur),
-                    _chiffre(
-                      b.remaining < 0 ? 'Dépassement' : 'Restant',
-                      formatAr(b.remaining.abs()),
-                      b.remaining < 0 ? AppColors.terracotta : AppColors.sauge,
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      _chiffre('Prévu', formatAr(b.amount), AppColors.cacao),
+                      _chiffre('Dépensé', formatAr(b.spent), couleur),
+                      _chiffre(
+                        b.remaining < 0 ? 'Dépassement' : 'Restant',
+                        formatAr(b.remaining.abs()),
+                        b.remaining < 0
+                            ? AppColors.terracotta
+                            : AppColors.sauge,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -134,45 +163,61 @@ class _BudgetsPageState extends State<BudgetsPage> {
     );
   }
 
+  Widget _selecteurMois() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+      decoration: BoxDecoration(
+        color: AppColors.blanc,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.sable),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            tooltip: 'Mois précédent',
+            icon: const Icon(Icons.chevron_left),
+            onPressed: () => _changerMois(-1),
+          ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: Text(
+              libelleMois(_mois),
+              key: ValueKey<DateTime>(_mois),
+              style: const TextStyle(
+                fontFamily: AppTheme.fontTitre,
+                fontSize: 19,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          IconButton(
+            tooltip: 'Mois suivant',
+            icon: const Icon(Icons.chevron_right),
+            onPressed: () => _changerMois(1),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Budgets')),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.noyer,
-        foregroundColor: AppColors.blanc,
+        heroTag: null,
         onPressed: () => _ouvrir(),
         icon: const Icon(Icons.add),
         label: const Text('Nouveau budget'),
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  tooltip: 'Mois précédent',
-                  icon: const Icon(Icons.chevron_left),
-                  onPressed: () => _changerMois(-1),
-                ),
-                Text(
-                  libelleMois(_mois),
-                  style: const TextStyle(
-                    fontFamily: AppTheme.fontTitre,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Mois suivant',
-                  icon: const Icon(Icons.chevron_right),
-                  onPressed: () => _changerMois(1),
-                ),
-              ],
-            ),
+          const EnteteEcran(
+            emoji: '🎯',
+            titre: 'Budgets',
+            sousTitre: 'Une limite mensuelle par catégorie',
           ),
+          _selecteurMois(),
           Expanded(
             child: FutureBuilder<List<BudgetItem>>(
               future: _futur,
@@ -180,10 +225,10 @@ class _BudgetsPageState extends State<BudgetsPage> {
                 if (snapshot.hasError) {
                   return Center(child: Text('Erreur : ${snapshot.error}'));
                 }
-                if (!snapshot.hasData) {
+                final budgets = snapshot.data;
+                if (budgets == null) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final budgets = snapshot.data!;
                 if (budgets.isEmpty) {
                   return const EtatVide(
                     titre: 'Aucun budget défini',
@@ -192,8 +237,11 @@ class _BudgetsPageState extends State<BudgetsPage> {
                   );
                 }
                 return ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
-                  children: [for (final b in budgets) _carte(b)],
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 96),
+                  children: [
+                    for (var i = 0; i < budgets.length; i++)
+                      _carte(budgets[i], i),
+                  ],
                 );
               },
             ),

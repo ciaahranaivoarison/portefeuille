@@ -35,3 +35,10 @@ String emojiCategorie(String? nom) {
   }
   return '🏷️';
 }
+
+/// Emoji d'un compte, selon son type : espèces, banque ou mobile money.
+String emojiCompte(String type) => switch (type) {
+      'cash' => '💵',
+      'bank' => '🏦',
+      _ => '📲',
+    };

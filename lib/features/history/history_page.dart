@@ -6,7 +6,9 @@ import '../../core/formats.dart';
 import '../../data/operations.dart';
 import '../../data/repository.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/entete_ecran.dart';
 import '../../widgets/etat_vide.dart';
+import '../../widgets/ui.dart';
 import '../add_operation/add_operation_page.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -149,7 +151,7 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  Widget _ligne(TransactionItem t) {
+  Widget _ligne(TransactionItem t, int index) {
     final couleur = switch (t.type) {
       'income' => AppColors.sauge,
       'expense' => AppColors.terracotta,
@@ -173,37 +175,49 @@ class _HistoryPageState extends State<HistoryPage> {
       if (t.note != null) t.note!,
     ].join(' · ');
 
-    return Dismissible(
-      key: ValueKey(t.id),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        margin: const EdgeInsets.only(bottom: 8),
-        color: AppColors.terracotta,
-        child: const Icon(Icons.delete_outline, color: AppColors.blanc),
-      ),
-      confirmDismiss: (_) => confirmerSuppression(context),
-      onDismissed: (_) {
-        setState(() => _items.removeWhere((x) => x.id == t.id));
-        Operations.instance.supprimer(t.id);
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Card(
-          child: ListTile(
-            onTap: () => _modifier(t),
-            title: Text(
-              '$emoji $titre',
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-            subtitle: Text(details, maxLines: 2),
-            trailing: Text(
-              '$signe${formatAr(t.amount)}',
-              style: TextStyle(
-                fontFamily: AppTheme.fontTitre,
-                fontWeight: FontWeight.w600,
-                color: couleur,
+    return Apparition(
+      key: ValueKey('operation${t.id}'),
+      index: index < 8 ? index : 0,
+      child: Dismissible(
+        key: ValueKey(t.id),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          margin: const EdgeInsets.only(bottom: 10),
+          decoration: BoxDecoration(
+            color: AppColors.terracotta,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Icon(Icons.delete_outline, color: AppColors.blanc),
+        ),
+        confirmDismiss: (_) => confirmerSuppression(context),
+        onDismissed: (_) {
+          setState(() => _items.removeWhere((x) => x.id == t.id));
+          Operations.instance.supprimer(t.id);
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Card(
+            child: ListTile(
+              onTap: () => _modifier(t),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 4,
+              ),
+              leading: PastilleEmoji(emoji, taille: 40),
+              title: Text(
+                titre,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              subtitle: Text(details, maxLines: 2),
+              trailing: Text(
+                '$signe${formatAr(t.amount)}',
+                style: TextStyle(
+                  fontFamily: AppTheme.fontTitre,
+                  fontWeight: FontWeight.w600,
+                  color: couleur,
+                ),
               ),
             ),
           ),
@@ -215,11 +229,17 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Historique')),
       body: Column(
         children: [
+          EnteteEcran(
+            emoji: '🧾',
+            titre: 'Historique',
+            sousTitre: _chargement
+                ? 'Chargement…'
+                : '${_items.length} opération(s)',
+          ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
             child: TextField(
               controller: _rechercheCtrl,
               onChanged: (_) => _charger(),
@@ -244,7 +264,7 @@ class _HistoryPageState extends State<HistoryPage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
             child: Row(
               children: [
                 Expanded(
@@ -284,7 +304,8 @@ class _HistoryPageState extends State<HistoryPage> {
                         DropdownMenuItem<int?>(
                           value: c.id,
                           child: Text(
-                            '${c.name} (${c.type == 'income' ? 'revenu' : 'dépense'})',
+                            '${emojiCategorie(c.name)} ${c.name} '
+                            '(${c.type == 'income' ? 'revenu' : 'dépense'})',
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -296,19 +317,6 @@ class _HistoryPageState extends State<HistoryPage> {
                   ),
                 ),
               ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '${_items.length} opération(s)',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppColors.noyer),
-              ),
             ),
           ),
           Expanded(
@@ -323,7 +331,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     : ListView.builder(
                         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                         itemCount: _items.length,
-                        itemBuilder: (context, i) => _ligne(_items[i]),
+                        itemBuilder: (context, i) => _ligne(_items[i], i),
                       ),
           ),
         ],
