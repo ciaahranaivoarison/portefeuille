@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../core/app_theme.dart';
 import 'ui.dart';
 
-/// En-tête commun aux écrans principaux : dégradé marron, emoji, titre,
-/// et éventuellement un montant animé.
+/// En-tête commun aux écrans principaux : un titre avec son emoji et,
+/// pour certains écrans, une grande carte de total en dégradé brun-doré.
 class EnteteEcran extends StatelessWidget {
   const EnteteEcran({
     super.key,
@@ -15,169 +14,247 @@ class EnteteEcran extends StatelessWidget {
     this.montant,
     this.sousTitre,
     this.action,
+    this.badge,
   });
 
   final String emoji;
   final String titre;
+
+  /// Texte au-dessus du montant de la carte de total.
   final String? etiquette;
+
+  /// Montant de la carte de total (s'affiche avec [etiquette]).
   final int? montant;
+
   final String? sousTitre;
   final Widget? action;
 
+  /// Petite pastille en haut à droite de la carte de total.
+  final String? badge;
+
   @override
   Widget build(BuildContext context) {
-    const rayon = BorderRadius.vertical(bottom: Radius.circular(30));
+    final p = context.pal;
+    final haut = MediaQuery.paddingOf(context).top;
+    final etiquetteHero = etiquette;
+    final montantHero = montant;
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: Colors.transparent,
-      ),
-      child: Container(
-        decoration: const BoxDecoration(
-          borderRadius: rayon,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.noyer, AppColors.cacao],
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20, haut + 12, 20, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _Pastille(emoji: emoji),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      titre,
+                      style: TextStyle(
+                        fontFamily: AppTheme.fontTitre,
+                        fontSize: 26,
+                        height: 1.1,
+                        fontWeight: FontWeight.w600,
+                        color: p.texte,
+                      ),
+                    ),
+                    if (sousTitre != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          sousTitre!,
+                          style: TextStyle(fontSize: 13, color: p.texteDoux),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              ?action,
+            ],
           ),
+          if (etiquetteHero != null && montantHero != null) ...[
+            const SizedBox(height: 18),
+            _CarteHero(
+              etiquette: etiquetteHero,
+              montant: montantHero,
+              badge: badge,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _Pastille extends StatelessWidget {
+  const _Pastille({required this.emoji});
+
+  final String emoji;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.5, end: 1),
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.elasticOut,
+      builder: (context, echelle, child) =>
+          Transform.scale(scale: echelle, child: child),
+      child: Container(
+        width: 50,
+        height: 50,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: p.surface,
+          border: Border.all(color: p.bordure),
           boxShadow: [
             BoxShadow(
-              color: Color(0x333B2418),
-              blurRadius: 18,
-              offset: Offset(0, 8),
+              color: p.accent.withValues(alpha: 0.25),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: rayon,
-          child: Stack(
-            children: [
-              const Positioned.fill(
-                child: CustomPaint(painter: _MotifPainter()),
-              ),
-              SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 14, 12, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+        child: Text(emoji, style: const TextStyle(fontSize: 24)),
+      ),
+    );
+  }
+}
+
+class _CarteHero extends StatelessWidget {
+  const _CarteHero({
+    required this.etiquette,
+    required this.montant,
+    this.badge,
+  });
+
+  final String etiquette;
+  final int montant;
+  final String? badge;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    final rayon = BorderRadius.circular(28);
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: rayon,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [p.heroDebut, p.heroFin],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: p.heroDebut.withValues(alpha: 0.35),
+            blurRadius: 26,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: rayon,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: CustomPaint(painter: _MotifPainter(p.surHero)),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          TweenAnimationBuilder<double>(
-                            tween: Tween<double>(begin: 0.4, end: 1),
-                            duration: const Duration(milliseconds: 700),
-                            curve: Curves.elasticOut,
-                            builder: (context, echelle, child) =>
-                                Transform.scale(scale: echelle, child: child),
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.creme.withValues(alpha: 0.16),
-                              ),
-                              child: Text(
-                                emoji,
-                                style: const TextStyle(fontSize: 22),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              titre,
-                              style: const TextStyle(
-                                fontFamily: AppTheme.fontTitre,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.creme,
-                              ),
-                            ),
-                          ),
-                          ?action,
-                          //if (action != null) action!,
-                        ],
-                      ),
-                      if (etiquette != null) ...[
-                        const SizedBox(height: 18),
-                        Text(
-                          etiquette!,
-                          style: const TextStyle(
+                      Expanded(
+                        child: Text(
+                          etiquette,
+                          style: TextStyle(
                             fontSize: 11.5,
-                            letterSpacing: 1.3,
+                            letterSpacing: 1.4,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.sable,
+                            color: p.surHero.withValues(alpha: 0.85),
                           ),
                         ),
-                      ],
-                      if (montant != null) ...[
-                        const SizedBox(height: 4),
-                        MontantAnime(
-                          montant: montant!,
-                          style: const TextStyle(
-                            fontFamily: AppTheme.fontTitre,
-                            fontSize: 36,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.creme,
+                      ),
+                      if (badge != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: p.surHero.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            badge!,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: p.surHero,
+                            ),
                           ),
                         ),
-                      ],
-                      if (sousTitre != null) ...[
-                        SizedBox(height: etiquette != null ? 6 : 12),
-                        Text(
-                          sousTitre!,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.sable,
-                          ),
-                        ),
-                      ],
                     ],
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: MontantAnime(
+                      montant: montant,
+                      style: TextStyle(
+                        fontFamily: AppTheme.fontTitre,
+                        fontSize: 38,
+                        fontWeight: FontWeight.w600,
+                        color: p.surHero,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-/// Motif du bandeau : lignes de carnet et pièces concentriques.
+/// Motif de la carte : pièces concentriques.
 class _MotifPainter extends CustomPainter {
-  const _MotifPainter();
+  const _MotifPainter(this.couleur);
+
+  final Color couleur;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final ligne = Paint()
-      ..color = AppColors.creme.withValues(alpha: 0.06)
-      ..strokeWidth = 1;
-    for (var y = 26.0; y < size.height; y += 26) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), ligne);
-    }
-
-    final centre = Offset(size.width * 0.88, size.height * 0.28);
+    final centre = Offset(size.width * 0.9, size.height * 0.2);
     for (var i = 1; i <= 4; i++) {
       canvas.drawCircle(
         centre,
-        28.0 * i,
+        32.0 * i,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.3
-          ..color = AppColors.caramel.withValues(alpha: 0.55 - i * 0.1),
+          ..strokeWidth = 1.4
+          ..color = couleur.withValues(alpha: 0.22 - i * 0.04),
       );
     }
     canvas.drawCircle(
       centre,
-      9,
-      Paint()..color = AppColors.caramel.withValues(alpha: 0.5),
+      10,
+      Paint()..color = couleur.withValues(alpha: 0.25),
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _MotifPainter old) => old.couleur != couleur;
 }

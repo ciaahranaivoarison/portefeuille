@@ -11,26 +11,27 @@ class EtatVide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.pal;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(
+            SizedBox(
               width: 150,
               height: 130,
-              child: CustomPaint(painter: _CarnetPainter()),
+              child: CustomPaint(painter: _CarnetPainter(p.bordure)),
             ),
             const SizedBox(height: 16),
             Text(
               titre,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppTheme.fontTitre,
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: AppColors.cacao,
+                color: p.texte,
               ),
             ),
             if (message != null) ...[
@@ -38,10 +39,7 @@ class EtatVide extends StatelessWidget {
               Text(
                 message!,
                 textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: AppColors.noyer),
+                style: TextStyle(color: p.texteDoux),
               ),
             ],
           ],
@@ -52,7 +50,9 @@ class EtatVide extends StatelessWidget {
 }
 
 class _CarnetPainter extends CustomPainter {
-  const _CarnetPainter();
+  const _CarnetPainter(this.ombre);
+
+  final Color ombre;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -62,7 +62,7 @@ class _CarnetPainter extends CustomPainter {
     // Ombre au sol
     canvas.drawOval(
       Rect.fromLTWH(w * 0.12, h * 0.88, w * 0.76, h * 0.08),
-      Paint()..color = AppColors.sable,
+      Paint()..color = ombre,
     );
 
     // Couverture du carnet
@@ -79,7 +79,7 @@ class _CarnetPainter extends CustomPainter {
         topLeft: const Radius.circular(6),
         bottomLeft: const Radius.circular(6),
       ),
-      Paint()..color = AppColors.cacao,
+      Paint()..color = const Color(0xFF5A3A28),
     );
 
     // Étiquette crème avec deux traits d'écriture
@@ -139,5 +139,5 @@ class _CarnetPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _CarnetPainter old) => old.ombre != ombre;
 }

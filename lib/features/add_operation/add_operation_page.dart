@@ -3,9 +3,12 @@ import 'package:flutter/services.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/emojis.dart';
+import '../../core/formats.dart';
 import '../../data/operations.dart';
 import '../../data/repository.dart';
+import '../../widgets/choix.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/ui.dart';
 
 class AddOperationPage extends StatefulWidget {
   const AddOperationPage({super.key, this.transaction});
@@ -80,6 +83,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
   }
 
   void _changerType(String type) {
+    if (type == _type) return;
     setState(() {
       _type = type;
       _categorieId = null;
@@ -97,10 +101,6 @@ class _AddOperationPageState extends State<AddOperationPage> {
     );
     if (choisie != null) setState(() => _date = choisie);
   }
-
-  String _dateTexte(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/'
-      '${d.month.toString().padLeft(2, '0')}/${d.year}';
 
   Future<void> _enregistrer() async {
     final messenger = ScaffoldMessenger.of(context);
@@ -163,36 +163,18 @@ class _AddOperationPageState extends State<AddOperationPage> {
     Navigator.of(context).pop(true);
   }
 
-  Widget _titre(String texte) => Padding(
-        padding: const EdgeInsets.only(top: 22, bottom: 8),
-        child: Text(
-          texte.toUpperCase(),
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                letterSpacing: 1.2,
-                color: AppColors.noyer,
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-      );
-
-  Widget _chip(String label, bool selectionne, VoidCallback onTap) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: selectionne,
-      showCheckmark: false,
-      onSelected: (_) => onTap(),
-      backgroundColor: AppColors.blanc,
-      selectedColor: AppColors.noyer,
-      side: const BorderSide(color: AppColors.sable),
-      labelStyle: TextStyle(
-        color: selectionne ? AppColors.blanc : AppColors.cacao,
-      ),
-    );
-  }
+  Color _couleurType(Palette p) => switch (_type) {
+        'income' => p.revenu,
+        'expense' => p.depense,
+        _ => p.principal,
+      };
 
   @override
   Widget build(BuildContext context) {
+    final p = context.pal;
+    final couleur = _couleurType(p);
     final transfert = _type == 'transfer';
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -210,81 +192,183 @@ class _AddOperationPageState extends State<AddOperationPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
-          SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'income', label: Text('Revenu')),
-              ButtonSegment(value: 'expense', label: Text('Dépense')),
-              ButtonSegment(value: 'transfer', label: Text('Transfert')),
+          Row(
+            children: [
+              Expanded(
+                child: CarteChoix(
+                  emoji: '💵',
+                  libelle: 'Revenu',
+                  actif: _type == 'income',
+                  couleur: p.revenu,
+                  onTap: () => _changerType('income'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: CarteChoix(
+                  emoji: '💸',
+                  libelle: 'Dépense',
+                  actif: _type == 'expense',
+                  couleur: p.depense,
+                  onTap: () => _changerType('expense'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: CarteChoix(
+                  emoji: '🔁',
+                  libelle: 'Transfert',
+                  actif: transfert,
+                  couleur: p.principal,
+                  onTap: () => _changerType('transfer'),
+                ),
+              ),
             ],
-            selected: {_type},
-            showSelectedIcon: false,
-            onSelectionChanged: (s) => _changerType(s.first),
           ),
-          _titre('Montant (Ar)'),
-          TextField(
-            controller: _montantCtrl,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            style: const TextStyle(
-              fontFamily: AppTheme.fontTitre,
-              fontSize: 28,
-              fontWeight: FontWeight.w600,
+          const SizedBox(height: 18),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: Column(
+                children: [
+                  Text(
+                    'MONTANT (AR)',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      letterSpacing: 1.4,
+                      fontWeight: FontWeight.w700,
+                      color: p.texteDoux,
+                    ),
+                  ),
+                  TextField(
+                    controller: _montantCtrl,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(12),
+                    ],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontTitre,
+                      fontSize: 40,
+                      fontWeight: FontWeight.w600,
+                      color: couleur,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: '0',
+                      filled: false,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                    ),
+                  ),
+                  ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _montantCtrl,
+                    builder: (context, valeur, _) {
+                      final n = int.tryParse(valeur.text) ?? 0;
+                      return Text(
+                        n > 0 ? formatAr(n) : 'Saisissez un montant',
+                        style: TextStyle(fontSize: 13, color: p.texteDoux),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-            decoration: const InputDecoration(hintText: '0'),
           ),
-          _titre(transfert ? 'Compte de départ' : 'Compte'),
+          TitreSection(transfert ? 'Compte de départ' : 'Compte'),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               for (final c in _comptes)
-                _chip(c.name, _compteId == c.id,
-                    () => setState(() => _compteId = c.id)),
+                ChipChoix(
+                  emoji: emojiCompte(c.type),
+                  libelle: c.name,
+                  actif: _compteId == c.id,
+                  onTap: () => setState(() => _compteId = c.id),
+                ),
             ],
           ),
           if (transfert) ...[
-            _titre("Compte d'arrivée"),
+            const SizedBox(height: 14),
+            Center(
+              child: Icon(
+                Icons.arrow_downward_rounded,
+                color: p.texteDoux,
+              ),
+            ),
+            const TitreSection("Compte d'arrivée"),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 for (final c in _comptes)
-                  _chip(c.name, _versCompteId == c.id,
-                      () => setState(() => _versCompteId = c.id)),
+                  ChipChoix(
+                    emoji: emojiCompte(c.type),
+                    libelle: c.name,
+                    actif: _versCompteId == c.id,
+                    onTap: () => setState(() => _versCompteId = c.id),
+                  ),
               ],
             ),
           ] else ...[
-            _titre('Catégorie'),
+            const TitreSection('Catégorie'),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 for (final c in _categories)
-                  _chip('${emojiCategorie(c.name)} ${c.name}',
-                      _categorieId == c.id,
-                      () => setState(() => _categorieId = c.id)),
+                  ChipChoix(
+                    emoji: emojiCategorie(c.name),
+                    libelle: c.name,
+                    actif: _categorieId == c.id,
+                    onTap: () => setState(() => _categorieId = c.id),
+                  ),
               ],
             ),
           ],
-          _titre('Date'),
-          OutlinedButton.icon(
-            onPressed: _choisirDate,
-            icon: const Icon(Icons.calendar_today, size: 18),
-            label: Text(_dateTexte(_date)),
+          const TitreSection('Date'),
+          Card(
+            child: InkWell(
+              onTap: _choisirDate,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    const PastilleEmoji('📅', taille: 40),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        formatDate(_date),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: p.texteDoux),
+                  ],
+                ),
+              ),
+            ),
           ),
-          _titre('Note (facultatif)'),
+          const TitreSection('Note (facultatif)'),
           TextField(
             controller: _noteCtrl,
-            decoration: const InputDecoration(hintText: 'Ex. : Déjeuner'),
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(
+              hintText: 'Ex. : Déjeuner',
+              prefixIcon: Icon(Icons.edit_note_rounded),
+            ),
           ),
           const SizedBox(height: 28),
           FilledButton(
             onPressed: _enregistrer,
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.noyer,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+            style: FilledButton.styleFrom(backgroundColor: couleur),
+            child: Text(
+              _modification ? 'Enregistrer les modifications' : 'Enregistrer',
             ),
-            child: const Text('Enregistrer'),
           ),
         ],
       ),

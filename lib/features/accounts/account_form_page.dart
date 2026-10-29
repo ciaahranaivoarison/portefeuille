@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/emojis.dart';
+import '../../core/formats.dart';
 import '../../data/accounts.dart';
+import '../../widgets/choix.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/ui.dart';
 
 /// Création ou modification d'un compte.
 class AccountFormPage extends StatefulWidget {
@@ -17,6 +21,16 @@ class AccountFormPage extends StatefulWidget {
 }
 
 class _AccountFormPageState extends State<AccountFormPage> {
+  static const _types = ['cash', 'bank', 'mobile'];
+
+  static const _suggestions = [
+    ('Espèces', 'cash'),
+    ('Banque', 'bank'),
+    ('MVola', 'mobile'),
+    ('Orange Money', 'mobile'),
+    ('Airtel Money', 'mobile'),
+  ];
+
   final _nomCtrl = TextEditingController();
   final _soldeCtrl = TextEditingController();
   String _type = 'cash';
@@ -79,7 +93,8 @@ class _AccountFormPageState extends State<AccountFormPage> {
     final ok = await confirmerSuppression(
       context,
       titre: 'Supprimer ce compte ?',
-      message: 'Un compte ne peut être supprimé que s\'il n\'a aucune opération.',
+      message:
+          "Un compte ne peut être supprimé que s'il n'a aucune opération.",
     );
     if (!ok) return;
     try {
@@ -91,36 +106,10 @@ class _AccountFormPageState extends State<AccountFormPage> {
     }
   }
 
-  Widget _titre(String texte) => Padding(
-        padding: const EdgeInsets.only(top: 22, bottom: 8),
-        child: Text(
-          texte.toUpperCase(),
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                letterSpacing: 1.2,
-                color: AppColors.noyer,
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-      );
-
-  Widget _chip(String type) {
-    final selectionne = _type == type;
-    return ChoiceChip(
-      label: Text(libelleTypeCompte(type)),
-      selected: selectionne,
-      showCheckmark: false,
-      onSelected: (_) => setState(() => _type = type),
-      backgroundColor: AppColors.blanc,
-      selectedColor: AppColors.noyer,
-      side: const BorderSide(color: AppColors.sable),
-      labelStyle: TextStyle(
-        color: selectionne ? AppColors.blanc : AppColors.cacao,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final p = context.pal;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_modification ? 'Modifier le compte' : 'Nouveau compte'),
@@ -138,52 +127,117 @@ class _AccountFormPageState extends State<AccountFormPage> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
-                _titre('Nom du compte'),
+                Center(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    transitionBuilder: (child, animation) =>
+                        ScaleTransition(scale: animation, child: child),
+                    child: PastilleEmoji(
+                      emojiCompte(_type),
+                      taille: 78,
+                      key: ValueKey<String>(_type),
+                    ),
+                  ),
+                ),
+                const TitreSection('Nom du compte'),
                 TextField(
                   controller: _nomCtrl,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: const InputDecoration(
                     hintText: 'Ex. : MVola, Banque, Espèces',
+                    prefixIcon: Icon(Icons.badge_outlined),
                   ),
                 ),
-                _titre('Type'),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                if (!_modification) ...[
+                  const SizedBox(height: 12),
+                  ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _nomCtrl,
+                    builder: (context, valeur, _) => Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final s in _suggestions)
+                          ChipChoix(
+                            emoji: emojiCompte(s.$2),
+                            libelle: s.$1,
+                            actif: valeur.text.trim().toLowerCase() ==
+                                s.$1.toLowerCase(),
+                            onTap: () => setState(() {
+                              _nomCtrl.text = s.$1;
+                              _type = s.$2;
+                            }),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+                const TitreSection('Type de compte'),
+                Row(
                   children: [
-                    _chip('cash'),
-                    _chip('bank'),
-                    _chip('mobile'),
+                    for (var i = 0; i < _types.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 10),
+                      Expanded(
+                        child: CarteChoix(
+                          emoji: emojiCompte(_types[i]),
+                          libelle: libelleTypeCompte(_types[i]),
+                          actif: _type == _types[i],
+                          onTap: () => setState(() => _type = _types[i]),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
-                _titre('Solde de départ (Ar)'),
-                TextField(
-                  controller: _soldeCtrl,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  style: const TextStyle(
-                    fontFamily: AppTheme.fontTitre,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w600,
+                const TitreSection('Solde de départ (Ar)'),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _soldeCtrl,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(12),
+                          ],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: AppTheme.fontTitre,
+                            fontSize: 34,
+                            fontWeight: FontWeight.w600,
+                            color: p.principal,
+                          ),
+                          decoration: const InputDecoration(
+                            hintText: '0',
+                            filled: false,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                          ),
+                        ),
+                        ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: _soldeCtrl,
+                          builder: (context, valeur, _) => Text(
+                            formatAr(int.tryParse(valeur.text) ?? 0),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: p.texteDoux,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  decoration: const InputDecoration(hintText: '0'),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Text(
                   "C'est l'argent présent sur le compte avant votre première "
-                  'opération. Les revenus, dépenses et transferts s\'y ajoutent.',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: AppColors.noyer),
+                  "opération. Les revenus, dépenses et transferts s'y ajoutent.",
+                  style: TextStyle(fontSize: 12.5, color: p.texteDoux),
                 ),
                 const SizedBox(height: 28),
                 FilledButton(
                   onPressed: _enregistrer,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.noyer,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
                   child: const Text('Enregistrer'),
                 ),
               ],
