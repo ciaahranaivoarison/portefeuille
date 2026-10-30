@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/emojis.dart';
 import '../../data/categories.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/ui.dart';
 
 /// Création ou modification d'une catégorie de l'utilisateur.
 class CategoryFormPage extends StatefulWidget {
@@ -75,7 +77,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
+    final p = context.pal;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -93,36 +95,62 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
-          Text(
-            'Catégorie $_typeTexte',
-            style: const TextStyle(
-              fontFamily: AppTheme.fontTitre,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
+          Center(
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _nomCtrl,
+              builder: (context, valeur, _) => PastilleEmoji(
+                emojiCategorie(valeur.text),
+                taille: 82,
+              ),
             ),
           ),
-          const SizedBox(height: 24),
-          Text(
-            'NOM DE LA CATÉGORIE',
-            style: text.labelMedium?.copyWith(
-              letterSpacing: 1.2,
-              color: AppColors.noyer,
-              fontWeight: FontWeight.w700,
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              'Catégorie $_typeTexte',
+              style: TextStyle(
+                fontFamily: AppTheme.fontTitre,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: p.texte,
+              ),
             ),
           ),
-          const SizedBox(height: 8),
+          const TitreSection('Nom de la catégorie'),
           TextField(
             controller: _nomCtrl,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(hintText: 'Ex. : Scolarité'),
+            decoration: const InputDecoration(
+              hintText: 'Ex. : Scolarité',
+              prefixIcon: Icon(Icons.label_outline_rounded),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: p.accent.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('💡', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "L'emoji est choisi automatiquement selon le nom : "
+                    '« Scolarité » donne 🎓, « Cadeau » donne 🎁. '
+                    'Un nom inconnu reçoit 🏷️.',
+                    style: TextStyle(fontSize: 12.5, color: p.texteDoux),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 28),
           FilledButton(
             onPressed: _enregistrer,
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.noyer,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
             child: const Text('Enregistrer'),
           ),
         ],

@@ -6,15 +6,16 @@ import '../../core/emojis.dart';
 import '../../core/formats.dart';
 import '../../data/budgets.dart';
 import '../../data/stats.dart';
+import '../../widgets/choix.dart';
 import '../../widgets/entete_ecran.dart';
 import '../../widgets/ui.dart';
 
 const _periodes = [
-  ('jour', "Aujourd'hui"),
-  ('semaine', 'Cette semaine'),
-  ('mois', 'Ce mois'),
-  ('precedent', 'Mois précédent'),
-  ('perso', 'Période personnalisée'),
+  ('jour', '☀️', "Aujourd'hui"),
+  ('semaine', '🗓️', 'Cette semaine'),
+  ('mois', '📆', 'Ce mois'),
+  ('precedent', '⏪', 'Mois précédent'),
+  ('perso', '🎛️', 'Personnalisée'),
 ];
 
 const _moisCourt = [
@@ -32,17 +33,17 @@ const _moisCourt = [
   'Déc',
 ];
 
-/// Couleurs des catégories : tons bruns, caramel, terracotta et sauge.
+/// Couleurs des catégories : bruns, dorés, terracotta et sauge.
 const _couleurs = [
-  AppColors.noyer,
-  AppColors.caramel,
-  AppColors.terracotta,
-  AppColors.sauge,
-  Color(0xFF8C6A4F),
+  Color(0xFF8B5E3C),
+  Color(0xFFC08A4A),
+  Color(0xFFB5523B),
+  Color(0xFF5E7F5B),
+  Color(0xFFA9794F),
   Color(0xFFD9B382),
-  Color(0xFFA65E44),
-  Color(0xFF7A8F6A),
-  Color(0xFF5B4636),
+  Color(0xFFCB7B63),
+  Color(0xFF8DA37E),
+  Color(0xFF6F4A33),
   Color(0xFFB8A58E),
 ];
 
@@ -111,37 +112,27 @@ class _StatsPageState extends State<StatsPage> {
     });
   }
 
-  Widget _vide() => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text(
-          'Aucune dépense sur cette période.',
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: AppColors.noyer),
-        ),
-      );
+  String _libelle(String code, String libelle) {
+    if (code == 'perso' && _periode == 'perso') {
+      return '${formatDate(_debut)} → ${formatDate(_fin)}';
+    }
+    return libelle;
+  }
 
-  Widget _selecteurPeriode() {
+  Widget _bandePeriodes() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          for (final p in _periodes)
+          for (final per in _periodes)
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(p.$2),
-                selected: _periode == p.$1,
-                showCheckmark: false,
-                onSelected: (_) => _choisir(p.$1),
-                backgroundColor: AppColors.blanc,
-                selectedColor: AppColors.noyer,
-                side: const BorderSide(color: AppColors.sable),
-                labelStyle: TextStyle(
-                  color: _periode == p.$1 ? AppColors.blanc : AppColors.cacao,
-                ),
+              child: ChipChoix(
+                emoji: per.$2,
+                libelle: _libelle(per.$1, per.$3),
+                actif: _periode == per.$1,
+                onTap: () => _choisir(per.$1),
               ),
             ),
         ],
@@ -149,57 +140,27 @@ class _StatsPageState extends State<StatsPage> {
     );
   }
 
-  Widget _ligneResume(String emoji, String label, int montant, Color couleur) {
-    return Row(
-      children: [
-        PastilleEmoji(emoji, taille: 38),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-        MontantAnime(
-          montant: montant,
-          style: TextStyle(
-            fontFamily: AppTheme.fontTitre,
-            fontWeight: FontWeight.w600,
-            fontSize: 15,
-            color: couleur,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _resume(PeriodStats s) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          children: [
-            _ligneResume('💵', 'Revenus', s.income, AppColors.sauge),
-            const Divider(height: 26),
-            _ligneResume('💸', 'Dépenses', s.expense, AppColors.terracotta),
-            const Divider(height: 26),
-            _ligneResume(
-              '⚖️',
-              'Solde de la période',
-              s.balance,
-              s.balance < 0 ? AppColors.terracotta : AppColors.cacao,
-            ),
-          ],
-        ),
+  Widget _vide(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Text(
+        '🌿 Aucune dépense sur cette période.',
+        style: TextStyle(color: context.pal.texteDoux),
       ),
     );
   }
 
-  Widget _ligneCategorie(int i, CategoryTotal c, int total) {
+  Widget _ligneCategorie(
+    BuildContext context,
+    int i,
+    CategoryTotal c,
+    int total,
+  ) {
+    final p = context.pal;
     final pct = c.amount * 100 / total;
     final pctTexte = pct < 1 ? '< 1 %' : '${pct.round()} %';
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
         children: [
           Container(
@@ -214,17 +175,18 @@ class _StatsPageState extends State<StatsPage> {
           Expanded(child: Text('${emojiCategorie(c.name)} ${c.name}')),
           Text(
             formatAr(c.amount),
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: AppTheme.fontTitre,
               fontWeight: FontWeight.w600,
+              color: p.texte,
             ),
           ),
           SizedBox(
-            width: 52,
+            width: 54,
             child: Text(
               pctTexte,
               textAlign: TextAlign.right,
-              style: const TextStyle(color: AppColors.noyer),
+              style: TextStyle(color: p.texteDoux),
             ),
           ),
         ],
@@ -232,7 +194,8 @@ class _StatsPageState extends State<StatsPage> {
     );
   }
 
-  List<Widget> _repartition(PeriodStats s) {
+  List<Widget> _repartition(BuildContext context, PeriodStats s) {
+    final p = context.pal;
     return [
       SizedBox(
         height: 220,
@@ -241,15 +204,15 @@ class _StatsPageState extends State<StatsPage> {
           children: [
             PieChart(
               PieChartData(
-                sectionsSpace: 2,
-                centerSpaceRadius: 70,
+                sectionsSpace: 3,
+                centerSpaceRadius: 72,
                 borderData: FlBorderData(show: false),
                 sections: [
                   for (var i = 0; i < s.categories.length; i++)
                     PieChartSectionData(
                       value: s.categories[i].amount.toDouble(),
                       color: _couleurs[i % _couleurs.length],
-                      radius: 36,
+                      radius: 34,
                       showTitle: false,
                     ),
                 ],
@@ -260,19 +223,16 @@ class _StatsPageState extends State<StatsPage> {
               children: [
                 Text(
                   'Dépenses',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: AppColors.noyer),
+                  style: TextStyle(fontSize: 12, color: p.texteDoux),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   formatAr(s.expense),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppTheme.fontTitre,
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.cacao,
+                    color: p.texte,
                   ),
                 ),
               ],
@@ -280,17 +240,19 @@ class _StatsPageState extends State<StatsPage> {
           ],
         ),
       ),
-      const SizedBox(height: 12),
+      const SizedBox(height: 10),
       for (var i = 0; i < s.categories.length; i++)
-        _ligneCategorie(i, s.categories[i], s.expense),
+        _ligneCategorie(context, i, s.categories[i], s.expense),
     ];
   }
 
-  List<Widget> _evolution(PeriodStats s) {
+  List<Widget> _evolution(BuildContext context, PeriodStats s) {
+    final p = context.pal;
     final points = s.points;
     final pic = points.reduce((a, b) => b.amount > a.amount ? b : a);
-    if (pic.amount == 0) return [_vide()];
+    if (pic.amount == 0) return [_vide(context)];
 
+    final picIndex = points.indexOf(pic);
     final n = points.length;
     final pas = n <= 10 ? 1 : (n <= 16 ? 2 : 5);
     final largeur = n <= 7 ? 22.0 : (n <= 16 ? 12.0 : 6.0);
@@ -324,18 +286,15 @@ class _StatsPageState extends State<StatsPage> {
                     if (i < 0 || i >= n || i % pas != 0) {
                       return const SizedBox.shrink();
                     }
-                    final p = points[i];
+                    final pt = points[i];
                     final label = s.monthly
-                        ? _moisCourt[p.date.month - 1]
-                        : '${p.date.day}';
+                        ? _moisCourt[pt.date.month - 1]
+                        : '${pt.date.day}';
                     return Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
                         label,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.noyer,
-                        ),
+                        style: TextStyle(fontSize: 11, color: p.texteDoux),
                       ),
                     );
                   },
@@ -349,9 +308,9 @@ class _StatsPageState extends State<StatsPage> {
                   barRods: [
                     BarChartRodData(
                       toY: points[i].amount.toDouble(),
-                      color: AppColors.noyer,
+                      color: i == picIndex ? p.accent : p.principal,
                       width: largeur,
-                      borderRadius: BorderRadius.circular(3),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                   ],
                 ),
@@ -362,56 +321,87 @@ class _StatsPageState extends State<StatsPage> {
       const SizedBox(height: 12),
       Text(
         '$pointFort · ${formatAr(pic.amount)}',
-        style: Theme.of(context)
-            .textTheme
-            .bodySmall
-            ?.copyWith(color: AppColors.noyer),
+        style: TextStyle(fontSize: 12.5, color: p.texteDoux),
       ),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
+    final p = context.pal;
     final plageTexte = _debut.isAtSameMomentAs(_fin)
         ? formatDate(_debut)
         : '${formatDate(_debut)} → ${formatDate(_fin)}';
 
     return Scaffold(
-      body: Column(
-        children: [
-          EnteteEcran(
-            emoji: '📊',
-            titre: 'Statistiques',
-            sousTitre: plageTexte,
-          ),
-          const SizedBox(height: 14),
-          _selecteurPeriode(),
-          const SizedBox(height: 4),
-          Expanded(
-            child: FutureBuilder<PeriodStats>(
-              future: _futur,
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('Erreur : ${snapshot.error}'));
-                }
-                final s = snapshot.data;
-                if (s == null) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                return ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+      body: FutureBuilder<PeriodStats>(
+        future: _futur,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Erreur : ${snapshot.error}'));
+          }
+          final s = snapshot.data;
+          if (s == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return ListView(
+            padding: const EdgeInsets.only(bottom: 24),
+            children: [
+              EnteteEcran(
+                emoji: '📊',
+                titre: 'Statistiques',
+                sousTitre: plageTexte,
+                etiquette: 'SOLDE DE LA PÉRIODE',
+                montant: s.balance,
+              ),
+              const SizedBox(height: 10),
+              _bandePeriodes(),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Apparition(index: 0, child: _resume(s)),
+                    Apparition(
+                      index: 0,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _CarteMini(
+                              emoji: '💵',
+                              label: 'Revenus',
+                              montant: s.income,
+                              couleur: p.revenu,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _CarteMini(
+                              emoji: '💸',
+                              label: 'Dépenses',
+                              montant: s.expense,
+                              couleur: p.depense,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const Apparition(
                       index: 1,
                       child: TitreSection('Dépenses par catégorie'),
                     ),
                     Apparition(
                       index: 2,
-                      child: Column(
-                        children: s.expense == 0
-                            ? [_vide()]
-                            : _repartition(s),
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: s.expense == 0
+                                ? [_vide(context)]
+                                : _repartition(context, s),
+                          ),
+                        ),
                       ),
                     ),
                     const Apparition(
@@ -420,17 +410,70 @@ class _StatsPageState extends State<StatsPage> {
                     ),
                     Apparition(
                       index: 4,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: s.expense == 0 ? [_vide()] : _evolution(s),
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: s.expense == 0
+                                ? [_vide(context)]
+                                : _evolution(context, s),
+                          ),
+                        ),
                       ),
                     ),
                   ],
-                );
-              },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _CarteMini extends StatelessWidget {
+  const _CarteMini({
+    required this.emoji,
+    required this.label,
+    required this.montant,
+    required this.couleur,
+  });
+
+  final String emoji;
+  final String label;
+  final int montant;
+  final Color couleur;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PastilleEmoji(emoji, taille: 40),
+            const SizedBox(height: 14),
+            Text(label, style: TextStyle(fontSize: 12.5, color: p.texteDoux)),
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: MontantAnime(
+                montant: montant,
+                style: TextStyle(
+                  fontFamily: AppTheme.fontTitre,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: couleur,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

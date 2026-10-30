@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/emojis.dart';
+import '../../core/formats.dart';
 import '../../data/budgets.dart';
 import '../../data/operations.dart';
+import '../../widgets/choix.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/ui.dart';
 
 /// Création ou modification du budget mensuel d'une catégorie.
 class BudgetFormPage extends StatefulWidget {
@@ -20,12 +24,23 @@ class BudgetFormPage extends StatefulWidget {
 }
 
 class _BudgetFormPageState extends State<BudgetFormPage> {
+  static const _suggestions = [50000, 100000, 200000, 300000, 500000];
+
   List<Category> _disponibles = [];
   int? _categorieId;
   bool _chargement = true;
   final _montantCtrl = TextEditingController();
 
   bool get _modification => widget.budget != null;
+
+  String get _emoji {
+    final b = widget.budget;
+    if (b != null) return emojiCategorie(b.categoryName);
+    for (final c in _disponibles) {
+      if (c.id == _categorieId) return emojiCategorie(c.name);
+    }
+    return '🎯';
+  }
 
   @override
   void initState() {
@@ -92,36 +107,10 @@ class _BudgetFormPageState extends State<BudgetFormPage> {
     Navigator.of(context).pop(true);
   }
 
-  Widget _titre(String texte) => Padding(
-        padding: const EdgeInsets.only(top: 22, bottom: 8),
-        child: Text(
-          texte.toUpperCase(),
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                letterSpacing: 1.2,
-                color: AppColors.noyer,
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-      );
-
-  Widget _chip(Category c) {
-    final selectionne = _categorieId == c.id;
-    return ChoiceChip(
-      label: Text(c.name),
-      selected: selectionne,
-      showCheckmark: false,
-      onSelected: (_) => setState(() => _categorieId = c.id),
-      backgroundColor: AppColors.blanc,
-      selectedColor: AppColors.noyer,
-      side: const BorderSide(color: AppColors.sable),
-      labelStyle: TextStyle(
-        color: selectionne ? AppColors.blanc : AppColors.cacao,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final p = context.pal;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_modification ? 'Modifier le budget' : 'Nouveau budget'),
@@ -139,62 +128,145 @@ class _BudgetFormPageState extends State<BudgetFormPage> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
-                const Text(
-                  'Budget mensuel',
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontTitre,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                Center(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    transitionBuilder: (child, animation) =>
+                        ScaleTransition(scale: animation, child: child),
+                    child: PastilleEmoji(
+                      _emoji,
+                      taille: 78,
+                      key: ValueKey<String>(_emoji),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: Text(
+                    'Budget mensuel',
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontTitre,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: p.texte,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  "Ce budget s'applique chaque mois.",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: AppColors.noyer),
+                Center(
+                  child: Text(
+                    "Ce budget s'applique chaque mois.",
+                    style: TextStyle(fontSize: 13, color: p.texteDoux),
+                  ),
                 ),
-                _titre('Catégorie de dépenses'),
+                const TitreSection('Catégorie de dépenses'),
                 if (_modification)
-                  Text(
-                    widget.budget!.categoryName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        children: [
+                          PastilleEmoji(_emoji, taille: 40),
+                          const SizedBox(width: 14),
+                          Text(
+                            widget.budget!.categoryName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   )
                 else if (_disponibles.isEmpty)
-                  const Text(
+                  Text(
                     'Toutes les catégories ont déjà un budget.',
+                    style: TextStyle(color: p.texteDoux),
                   )
                 else
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [for (final c in _disponibles) _chip(c)],
+                    children: [
+                      for (final c in _disponibles)
+                        ChipChoix(
+                          emoji: emojiCategorie(c.name),
+                          libelle: c.name,
+                          actif: _categorieId == c.id,
+                          onTap: () => setState(() => _categorieId = c.id),
+                        ),
+                    ],
                   ),
-                _titre('Budget par mois (Ar)'),
-                TextField(
-                  controller: _montantCtrl,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  style: const TextStyle(
-                    fontFamily: AppTheme.fontTitre,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w600,
+                const TitreSection('Budget par mois (Ar)'),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _montantCtrl,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(12),
+                          ],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: AppTheme.fontTitre,
+                            fontSize: 38,
+                            fontWeight: FontWeight.w600,
+                            color: p.principal,
+                          ),
+                          decoration: const InputDecoration(
+                            hintText: '300000',
+                            filled: false,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                          ),
+                        ),
+                        ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: _montantCtrl,
+                          builder: (context, valeur, _) {
+                            final n = int.tryParse(valeur.text) ?? 0;
+                            return Text(
+                              n > 0 ? '${formatAr(n)} par mois' : 'par mois',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: p.texteDoux,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  decoration: const InputDecoration(hintText: '300000'),
+                ),
+                const SizedBox(height: 14),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _montantCtrl,
+                  builder: (context, valeur, _) {
+                    final n = int.tryParse(valeur.text) ?? 0;
+                    return Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final s in _suggestions)
+                          ChipChoix(
+                            libelle: formatAr(s),
+                            actif: n == s,
+                            onTap: () => _montantCtrl.text = '$s',
+                          ),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 28),
                 FilledButton(
                   onPressed: (!_modification && _disponibles.isEmpty)
                       ? null
                       : _enregistrer,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.noyer,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
                   child: const Text('Enregistrer'),
                 ),
               ],
