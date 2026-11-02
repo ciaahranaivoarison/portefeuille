@@ -9,6 +9,7 @@ import '../../core/app_theme.dart';
 import '../../core/formats.dart';
 import '../../core/security_service.dart';
 import '../../data/backup_service.dart';
+import '../../widgets/ui.dart';
 import '../lock/lock_screen.dart';
 import '../shell/app_shell.dart';
 
@@ -82,7 +83,7 @@ class _BackupPageState extends State<BackupPage> {
         await _chargerDate();
       }
     } catch (e) {
-      _message("La sauvegarde a échoué : $e");
+      _message('La sauvegarde a échoué : $e');
     } finally {
       if (mounted) setState(() => _enCours = false);
     }
@@ -108,7 +109,7 @@ class _BackupPageState extends State<BackupPage> {
         await _chargerDate();
       }
     } catch (e) {
-      _message("Le partage a échoué : $e");
+      _message('Le partage a échoué : $e');
     } finally {
       if (mounted) setState(() => _enCours = false);
     }
@@ -206,86 +207,109 @@ class _BackupPageState extends State<BackupPage> {
     }
   }
 
-  Widget _titre(String texte) => Padding(
-        padding: const EdgeInsets.only(top: 24, bottom: 8),
-        child: Text(
-          texte.toUpperCase(),
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                letterSpacing: 1.2,
-                color: AppColors.noyer,
-                fontWeight: FontWeight.w700,
+  Widget _bloc(Palette p, String emoji, String titre, String texte) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PastilleEmoji(emoji, taille: 44),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    titre,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    texte,
+                    style: TextStyle(fontSize: 12.5, color: p.texteDoux),
+                  ),
+                ],
               ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
+    final p = context.pal;
     return Scaffold(
       appBar: AppBar(title: const Text('Sauvegarde et restauration')),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'La sauvegarde contient vos comptes, catégories, budgets et '
-                'opérations, dans un fichier .json. Elle se fait sans '
-                'connexion Internet. Le code de protection n\'en fait pas '
-                'partie.\n\n'
-                "Le fichier n'est pas chiffré : conservez-le dans un endroit "
-                'sûr.',
-                style: text.bodyMedium,
-              ),
+          if (_enCours)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: LinearProgressIndicator(),
+            ),
+          Apparition(
+            index: 0,
+            child: _bloc(
+              p,
+              '💾',
+              'Vos données restent à vous',
+              'La sauvegarde contient vos comptes, catégories, budgets et '
+                  'opérations, dans un fichier .json. Elle se fait sans '
+                  "connexion Internet. Le code de protection n'en fait pas "
+                  'partie.',
             ),
           ),
-          _titre('Sauvegarder mes données'),
-          Text(
-            _derniere == null
-                ? 'Dernière sauvegarde : jamais'
-                : 'Dernière sauvegarde : ${_dateHeure(_derniere!)}',
-            style: text.bodySmall?.copyWith(color: AppColors.noyer),
+          const TitreSection('Sauvegarder mes données'),
+          Apparition(
+            index: 1,
+            child: _bloc(
+              p,
+              '🕒',
+              'Dernière sauvegarde',
+              _derniere == null ? 'Jamais' : _dateHeure(_derniere!),
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           FilledButton.icon(
             onPressed: _enCours ? null : _enregistrerSurTelephone,
-            icon: const Icon(Icons.save_alt),
+            icon: const Icon(Icons.save_alt_rounded),
             label: const Text('Enregistrer sur le téléphone'),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.noyer,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
           ),
           const SizedBox(height: 10),
           OutlinedButton.icon(
             onPressed: _enCours ? null : _partager,
             icon: const Icon(Icons.share_outlined),
             label: const Text('Partager (Drive, WhatsApp, e-mail…)'),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "Le fichier n'est pas chiffré : conservez-le dans un endroit sûr.",
+            style: TextStyle(fontSize: 12.5, color: p.texteDoux),
+          ),
+          const TitreSection('Restaurer mes données'),
+          Apparition(
+            index: 2,
+            child: _bloc(
+              p,
+              '⚠️',
+              'Attention',
+              'La restauration remplace toutes les données actuelles par '
+                  'celles du fichier choisi.',
             ),
           ),
-          _titre('Restaurer mes données'),
-          Text(
-            'Choisissez un fichier de sauvegarde. Il remplacera toutes les '
-            'données actuelles.',
-            style: text.bodySmall?.copyWith(color: AppColors.noyer),
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           OutlinedButton.icon(
             onPressed: _enCours ? null : _restaurer,
-            icon: const Icon(Icons.restore),
+            icon: const Icon(Icons.restore_rounded),
             label: const Text('Restaurer depuis un fichier'),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
           ),
-          if (_enCours)
-            const Padding(
-              padding: EdgeInsets.only(top: 24),
-              child: Center(child: CircularProgressIndicator()),
-            ),
         ],
       ),
     );

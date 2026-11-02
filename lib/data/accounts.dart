@@ -94,7 +94,7 @@ class Accounts {
     final n = Sqflite.firstIntValue(
           await db.rawQuery(
             'SELECT COUNT(*) FROM transactions '
-            'WHERE account_id = ? OR to_account_id = ?',
+            'WHERE account_id = ? OR to_account_id = ?', 
             [id, id],
           ),
         ) ??

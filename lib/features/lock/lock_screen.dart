@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/security_service.dart';
+import '../../widgets/pave_numerique.dart';
 import '../../widgets/sceau.dart';
+import '../../widgets/ui.dart';
 
 /// Écran de verrouillage : demande le code PIN ou le mot de passe.
 /// Sert au lancement de l'application et à confirmer son identité
@@ -41,6 +43,7 @@ class _LockScreenState extends State<LockScreen> {
   bool _masque = true;
   String? _erreur;
   int _echecs = 0;
+  int _secousses = 0;
   int _attente = 0;
   Timer? _minuteur;
 
@@ -89,8 +92,8 @@ class _LockScreenState extends State<LockScreen> {
     setState(() {
       _saisie = '';
       _motDePasseCtrl.clear();
-      _erreur =
-          _type == 'pin' ? 'Code incorrect.' : 'Mot de passe incorrect.';
+      _erreur = _type == 'pin' ? 'Code incorrect.' : 'Mot de passe incorrect.';
+      _secousses++;
     });
     if (_echecs >= 5) _bloquer();
   }
@@ -118,7 +121,6 @@ class _LockScreenState extends State<LockScreen> {
 
   void _toucher(String chiffre) {
     if (_attente > 0 || _saisie.length >= _longueur) return;
-    HapticFeedback.selectionClick();
     setState(() {
       _saisie += chiffre;
       _erreur = null;
@@ -131,130 +133,61 @@ class _LockScreenState extends State<LockScreen> {
     setState(() => _saisie = _saisie.substring(0, _saisie.length - 1));
   }
 
-  Widget _points() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (var i = 0; i < _longueur; i++)
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-            width: 14,
-            height: 14,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: i < _saisie.length ? AppColors.noyer : Colors.transparent,
-              border: Border.all(color: AppColors.noyer, width: 1.5),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _touche({String? texte, IconData? icone, VoidCallback? onTap}) {
-    return SizedBox(
-      width: 76,
-      height: 76,
-      child: onTap == null
-          ? null
-          : Material(
-              color: AppColors.blanc,
-              shape: const CircleBorder(
-                side: BorderSide(color: AppColors.sable),
-              ),
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: onTap,
-                child: Center(
-                  child: icone != null
-                      ? Icon(icone, color: AppColors.cacao)
-                      : Text(
-                          texte!,
-                          style: const TextStyle(
-                            fontFamily: AppTheme.fontTitre,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.cacao,
-                          ),
-                        ),
-                ),
-              ),
-            ),
-    );
-  }
-
-  Widget _ligne(List<Widget> touches) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          for (final t in touches)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 9),
-              child: t,
-            ),
-        ],
+  /// Fait trembler son contenu à chaque nouvelle erreur.
+  Widget _secousse({required Widget child}) {
+    return TweenAnimationBuilder<double>(
+      key: ValueKey<int>(_secousses),
+      tween: Tween<double>(begin: _secousses == 0 ? 1 : 0, end: 1),
+      duration: const Duration(milliseconds: 420),
+      builder: (context, t, enfant) => Transform.translate(
+        offset: Offset(math.sin(t * math.pi * 7) * 12 * (1 - t), 0),
+        child: enfant,
       ),
-    );
-  }
-
-  Widget _clavier() {
-    Widget chiffre(String n) => _touche(texte: n, onTap: () => _toucher(n));
-    return Column(
-      children: [
-        _ligne([chiffre('1'), chiffre('2'), chiffre('3')]),
-        _ligne([chiffre('4'), chiffre('5'), chiffre('6')]),
-        _ligne([chiffre('7'), chiffre('8'), chiffre('9')]),
-        _ligne([
-          _biometrie
-              ? _touche(icone: Icons.fingerprint, onTap: _essayerBiometrie)
-              : _touche(),
-          chiffre('0'),
-          _touche(icone: Icons.backspace_outlined, onTap: _effacer),
-        ]),
-      ],
+      child: child,
     );
   }
 
   Widget _champMotDePasse() {
+    return TextField(
+      controller: _motDePasseCtrl,
+      obscureText: _masque,
+      enabled: _attente == 0,
+      onSubmitted: _verifier,
+      decoration: InputDecoration(
+        hintText: 'Mot de passe',
+        prefixIcon: const Icon(Icons.lock_outline_rounded),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _masque
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
+          ),
+          onPressed: () => setState(() => _masque = !_masque),
+        ),
+      ),
+    );
+  }
+
+  Widget _actionsMotDePasse() {
     return Column(
       children: [
-        TextField(
-          controller: _motDePasseCtrl,
-          obscureText: _masque,
-          enabled: _attente == 0,
-          onSubmitted: _verifier,
-          decoration: InputDecoration(
-            hintText: 'Mot de passe',
-            suffixIcon: IconButton(
-              icon: Icon(
-                _masque
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-              ),
-              onPressed: () => setState(() => _masque = !_masque),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
           child: FilledButton(
             onPressed: _attente > 0
                 ? null
                 : () => _verifier(_motDePasseCtrl.text),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.noyer,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
             child: const Text('Déverrouiller'),
           ),
         ),
         if (_biometrie)
-          TextButton.icon(
-            onPressed: _essayerBiometrie,
-            icon: const Icon(Icons.fingerprint),
-            label: const Text("Utiliser l'empreinte ou le visage"),
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: TextButton.icon(
+              onPressed: _essayerBiometrie,
+              icon: const Icon(Icons.fingerprint),
+              label: const Text("Utiliser l'empreinte ou le visage"),
+            ),
           ),
       ],
     );
@@ -262,10 +195,11 @@ class _LockScreenState extends State<LockScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
+    final p = context.pal;
     final message = _attente > 0
         ? "Trop d'essais. Réessayez dans $_attente s."
         : (_erreur ?? '');
+    final pin = _type == 'pin';
 
     return Scaffold(
       appBar: widget.annulable ? AppBar() : null,
@@ -274,46 +208,64 @@ class _LockScreenState extends State<LockScreen> {
             ? const Center(child: CircularProgressIndicator())
             : Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Sceau(),
-                      const SizedBox(height: 22),
+                      const Apparition(child: Sceau(taille: 88)),
+                      const SizedBox(height: 18),
                       Text(
                         widget.titre ?? "Gestion d'argent",
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: AppTheme.fontTitre,
                           fontSize: 26,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.cacao,
+                          color: p.texte,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
-                        _type == 'pin'
+                        pin
                             ? 'Saisissez votre code PIN'
                             : 'Saisissez votre mot de passe',
-                        style:
-                            text.bodyMedium?.copyWith(color: AppColors.noyer),
+                        style: TextStyle(color: p.texteDoux),
                       ),
-                      const SizedBox(height: 24),
-                      if (_type == 'pin') _points(),
+                      const SizedBox(height: 26),
+                      _secousse(
+                        child: pin
+                            ? PointsPin(
+                                longueur: _longueur,
+                                remplis: _saisie.length,
+                              )
+                            : _champMotDePasse(),
+                      ),
                       SizedBox(
-                        height: 44,
+                        height: 46,
                         child: Center(
-                          child: Text(
-                            message,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: AppColors.terracotta,
-                              fontWeight: FontWeight.w600,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: Text(
+                              message,
+                              key: ValueKey<String>(message),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: p.depense,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                      _type == 'pin' ? _clavier() : _champMotDePasse(),
+                      if (pin)
+                        PaveNumerique(
+                          onChiffre: _toucher,
+                          onEffacer: _effacer,
+                          onBiometrie: _biometrie ? _essayerBiometrie : null,
+                          actif: _attente == 0,
+                        )
+                      else
+                        _actionsMotDePasse(),
                     ],
                   ),
                 ),
