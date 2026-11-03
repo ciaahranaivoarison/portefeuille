@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 import 'package:flutter/services.dart';
 
 import '../core/app_theme.dart';

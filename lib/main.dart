@@ -26,7 +26,7 @@ class GestionArgentApp extends StatelessWidget {
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: Reglages.instance.mode,
-        locale: const Locale('fr'),
+        locale: Reglages.instance.locale,
         supportedLocales: const [Locale('fr'), Locale('en')],
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,

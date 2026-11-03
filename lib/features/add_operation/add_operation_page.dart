@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/app_theme.dart';
@@ -183,7 +184,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
         actions: [
           if (_modification)
             IconButton(
-              tooltip: 'Supprimer',
+              tooltip: tr('Supprimer'),
               icon: const Icon(Icons.delete_outline),
               onPressed: _supprimer,
             ),
@@ -254,8 +255,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
                       fontWeight: FontWeight.w600,
                       color: couleur,
                     ),
-                    decoration: const InputDecoration(
-                      hintText: '0',
+                    decoration: InputDecoration(
+                      hintText: tr('0'),
                       filled: false,
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
@@ -357,8 +358,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
           TextField(
             controller: _noteCtrl,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              hintText: 'Ex. : Déjeuner',
+            decoration: InputDecoration(
+              hintText: tr('Ex. : Déjeuner'),
               prefixIcon: Icon(Icons.edit_note_rounded),
             ),
           ),

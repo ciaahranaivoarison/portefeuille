@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/emojis.dart';
@@ -220,7 +221,7 @@ class _HomePageState extends State<HomePage> {
                 badge: libelleMois(DateTime.now()),
                 action: BoutonHeader(
                   icone: Icons.settings_outlined,
-                  infobulle: 'Paramètres',
+                  infobulle: tr('Paramètres'),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const SettingsPage()),
                   ),

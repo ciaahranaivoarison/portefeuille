@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/app_theme.dart';
@@ -116,7 +117,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
         actions: [
           if (_modification)
             IconButton(
-              tooltip: 'Supprimer',
+              tooltip: tr('Supprimer'),
               icon: const Icon(Icons.delete_outline),
               onPressed: _supprimer,
             ),
@@ -143,8 +144,8 @@ class _AccountFormPageState extends State<AccountFormPage> {
                 TextField(
                   controller: _nomCtrl,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    hintText: 'Ex. : MVola, Banque, Espèces',
+                  decoration: InputDecoration(
+                    hintText: tr('Ex. : MVola, Banque, Espèces'),
                     prefixIcon: Icon(Icons.badge_outlined),
                   ),
                 ),
@@ -207,8 +208,8 @@ class _AccountFormPageState extends State<AccountFormPage> {
                             fontWeight: FontWeight.w600,
                             color: p.principal,
                           ),
-                          decoration: const InputDecoration(
-                            hintText: '0',
+                          decoration: InputDecoration(
+                            hintText: tr('0'),
                             filled: false,
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,

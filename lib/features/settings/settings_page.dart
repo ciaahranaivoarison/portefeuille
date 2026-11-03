@@ -1,13 +1,15 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 
 import '../../core/app_theme.dart';
 import '../../core/reglages.dart';
 import '../../core/security_service.dart';
 import '../../widgets/rubrique.dart';
+import '../../widgets/texte.dart';
 import '../../widgets/ui.dart';
 import '../categories/categories_page.dart';
 import 'apparence_page.dart';
 import 'backup_page.dart';
+import 'langue_page.dart';
 import 'securite_page.dart';
 
 /// Écran Paramètres : un point d'entrée vers chaque rubrique.
@@ -73,6 +75,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   titre: 'Apparence',
                   sousTitre: _libelleMode,
                   onTap: () => _ouvrir(const ApparencePage()),
+                ),
+                Rubrique(
+                  emoji: '🌐',
+                  titre: 'Langue',
+                  sousTitre: Reglages.instance.nomLangue,
+                  onTap: () => _ouvrir(const LanguePage()),
                 ),
               ],
             ),

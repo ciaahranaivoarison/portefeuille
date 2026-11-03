@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/emojis.dart';
@@ -86,7 +87,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
         actions: [
           if (_modification)
             IconButton(
-              tooltip: 'Supprimer',
+              tooltip: tr('Supprimer'),
               icon: const Icon(Icons.delete_outline),
               onPressed: _supprimer,
             ),
@@ -120,8 +121,8 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
           TextField(
             controller: _nomCtrl,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              hintText: 'Ex. : Scolarité',
+            decoration: InputDecoration(
+              hintText: tr('Ex. : Scolarité'),
               prefixIcon: Icon(Icons.label_outline_rounded),
             ),
           ),

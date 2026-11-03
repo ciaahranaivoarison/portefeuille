@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/emojis.dart';
@@ -124,7 +125,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         title: const Text('Catégories'),
         actions: [
           IconButton(
-            tooltip: 'Nouvelle catégorie',
+            tooltip: tr('Nouvelle catégorie'),
             icon: const Icon(Icons.add_rounded),
             onPressed: () => _ouvrir(),
           ),
@@ -186,13 +187,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     children: [
                       for (var i = 0; i < categories.length; i++)
                         _tuile(context, categories[i], largeur, i),
-                      SizedBox(
-                        width: contraintes.maxWidth,
-                        child: CarteAjout(
-                          libelle: 'Nouvelle catégorie',
-                          onTap: () => _ouvrir(),
-                        ),
-                      ),
                     ],
                   );
                 },

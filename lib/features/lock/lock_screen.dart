@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/security_service.dart';
@@ -76,7 +77,7 @@ class _LockScreenState extends State<LockScreen> {
 
   Future<void> _essayerBiometrie() async {
     final ok = await _service.authentifierBiometrie(
-      "Déverrouillez Gestion d'argent",
+      tr("Déverrouillez Gestion d'argent"),
     );
     if (ok && mounted) widget.onUnlocked();
   }
@@ -154,7 +155,7 @@ class _LockScreenState extends State<LockScreen> {
       enabled: _attente == 0,
       onSubmitted: _verifier,
       decoration: InputDecoration(
-        hintText: 'Mot de passe',
+        hintText: tr('Mot de passe'),
         prefixIcon: const Icon(Icons.lock_outline_rounded),
         suffixIcon: IconButton(
           icon: Icon(

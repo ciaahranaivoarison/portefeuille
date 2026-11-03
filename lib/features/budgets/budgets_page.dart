@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/emojis.dart';
@@ -107,7 +108,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            tooltip: 'Mois précédent',
+            tooltip: tr('Mois précédent'),
             icon: const Icon(Icons.chevron_left_rounded),
             onPressed: () => _changerMois(-1),
           ),
@@ -125,7 +126,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
             ),
           ),
           IconButton(
-            tooltip: 'Mois suivant',
+            tooltip: tr('Mois suivant'),
             icon: const Icon(Icons.chevron_right_rounded),
             onPressed: () => _changerMois(1),
           ),
@@ -296,7 +297,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
                 montant: n > 0 ? prevu : null,
                 action: BoutonHeader(
                   icone: Icons.add_rounded,
-                  infobulle: 'Nouveau budget',
+                  infobulle: tr('Nouveau budget'),
                   onTap: () => _ouvrir(),
                 ),
               ),
@@ -322,13 +323,6 @@ class _BudgetsPageState extends State<BudgetsPage> {
                     ],
                     for (var i = 0; i < n; i++)
                       _carte(context, budgets[i], i + 1),
-                    Apparition(
-                      index: n + 1,
-                      child: CarteAjout(
-                        libelle: 'Nouveau budget',
-                        onTap: () => _ouvrir(),
-                      ),
-                    ),
                   ],
                 ),
               ),

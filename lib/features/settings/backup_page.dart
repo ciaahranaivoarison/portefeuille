@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -71,7 +72,7 @@ class _BackupPageState extends State<BackupPage> {
     try {
       final octets = await _service.exporter();
       final emplacement = await FilePicker.saveFile(
-        dialogTitle: 'Enregistrer la sauvegarde',
+        dialogTitle: tr('Enregistrer la sauvegarde'),
         fileName: _service.nomFichier(),
         bytes: octets,
       );

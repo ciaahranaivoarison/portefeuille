@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/emojis.dart';
@@ -145,7 +146,7 @@ class _AccountsPageState extends State<AccountsPage> {
                 montant: total,
                 action: BoutonHeader(
                   icone: Icons.add_rounded,
-                  infobulle: 'Nouveau compte',
+                  infobulle: tr('Nouveau compte'),
                   onTap: () => _ouvrir(),
                 ),
               ),
@@ -157,17 +158,10 @@ class _AccountsPageState extends State<AccountsPage> {
                     if (n == 0)
                       const EtatVide(
                         titre: 'Aucun compte',
-                        message: 'Créez votre premier compte ci-dessous.',
+                        message: 'Appuyez sur le bouton + en haut à droite pour créer votre premier compte.',
                       ),
                     for (var i = 0; i < n; i++)
                       _carte(context, comptes[i], total, i),
-                    Apparition(
-                      index: n,
-                      child: CarteAjout(
-                        libelle: 'Ajouter un compte',
-                        onTap: () => _ouvrir(),
-                      ),
-                    ),
                   ],
                 ),
               ),

@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 import 'package:local_auth/local_auth.dart';
 
 import '../../core/app_theme.dart';
@@ -100,7 +101,7 @@ class _SecuritePageState extends State<SecuritePage> {
   Future<void> _basculerBiometrie(bool activer) async {
     if (activer) {
       final ok = await _service.authentifierBiometrie(
-        "Confirmez l'activation du déverrouillage biométrique",
+        tr("Confirmez l'activation du déverrouillage biométrique"),
       );
       if (!ok) {
         _message('Activation annulée.');

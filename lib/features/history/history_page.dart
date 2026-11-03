@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/emojis.dart';
@@ -204,7 +205,7 @@ class _HistoryPageState extends State<HistoryPage> {
       children: [
         BoutonHeader(
           icone: Icons.tune_rounded,
-          infobulle: 'Filtres',
+          infobulle: tr('Filtres'),
           onTap: _ouvrirFiltres,
         ),
         if (n > 0)
@@ -237,7 +238,7 @@ class _HistoryPageState extends State<HistoryPage> {
         controller: _rechercheCtrl,
         onChanged: (_) => _charger(),
         decoration: InputDecoration(
-          hintText: 'Rechercher une note, une catégorie, un compte',
+          hintText: tr('Rechercher une note, une catégorie, un compte'),
           prefixIcon: const Icon(Icons.search_rounded),
           suffixIcon: _rechercheCtrl.text.isEmpty
               ? null

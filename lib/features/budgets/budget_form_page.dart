@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/app_theme.dart';
@@ -117,7 +118,7 @@ class _BudgetFormPageState extends State<BudgetFormPage> {
         actions: [
           if (_modification)
             IconButton(
-              tooltip: 'Supprimer',
+              tooltip: tr('Supprimer'),
               icon: const Icon(Icons.delete_outline),
               onPressed: _supprimer,
             ),
@@ -218,8 +219,8 @@ class _BudgetFormPageState extends State<BudgetFormPage> {
                             fontWeight: FontWeight.w600,
                             color: p.principal,
                           ),
-                          decoration: const InputDecoration(
-                            hintText: '300000',
+                          decoration: InputDecoration(
+                            hintText: tr('300000'),
                             filled: false,
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,

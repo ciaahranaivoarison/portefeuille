@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/security_service.dart';
@@ -251,7 +252,7 @@ class _ProtectionSetupPageState extends State<ProtectionSetupPage> {
           obscureText: _masque,
           onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
-            hintText: 'Votre mot de passe',
+            hintText: tr('Votre mot de passe'),
             prefixIcon: const Icon(Icons.lock_outline_rounded),
             suffixIcon: IconButton(
               icon: Icon(
@@ -271,10 +272,10 @@ class _ProtectionSetupPageState extends State<ProtectionSetupPage> {
           obscureText: _masque,
           onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
-            hintText: 'Saisissez-le à nouveau',
+            hintText: tr('Saisissez-le à nouveau'),
             prefixIcon: const Icon(Icons.verified_outlined),
             errorText: (confirmation.isNotEmpty && !identiques)
-                ? 'Les deux saisies sont différentes.'
+                ? tr('Les deux saisies sont différentes.')
                 : null,
           ),
         ),
