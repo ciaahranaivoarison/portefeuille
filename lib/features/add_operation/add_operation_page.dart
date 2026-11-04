@@ -359,7 +359,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
             controller: _noteCtrl,
             textCapitalization: TextCapitalization.sentences,
             decoration: InputDecoration(
-              hintText: tr('Ex. : Déjeuner'),
+              hintText: tr('Écrivez ici'),
               prefixIcon: Icon(Icons.edit_note_rounded),
             ),
           ),

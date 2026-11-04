@@ -521,6 +521,15 @@ final Map<String, (String, String)> dictionnaire = {
   ),
   'Cette action est irréversible.': ('This action cannot be undone.', 'Tsy azo averina ity hetsika ity.'),
   'Enregistrer la sauvegarde': ('Save the backup', 'Tehirizina ny tahiry'),
+  'Écrivez ici': ('Write here', 'Soraty eto'),
+  'Appuyez sur le bouton + en haut à droite pour fixer une limite mensuelle par catégorie.': (
+    'Tap the + button at the top right to set a monthly limit per category.',
+    'Tsindrio ny bokotra + eo ambony havanana mba hametrahana fetra isam-bolana isaky ny sokajy.',
+  ),
+  'Un emoji est associé automatiquement au nom de la catégorie.': (
+    'An emoji is automatically matched to the category name.',
+    'Misy emoji mifanaraka amin’ny anaran’ny sokajy ho azy.',
+  ),
   'Appuyez sur le bouton + en haut à droite pour créer votre premier compte.': (
     'Tap the + button at the top right to create your first account.',
     'Tsindrio ny bokotra + eo ambony havanana mba hamoronana ny kaonty voalohany.',

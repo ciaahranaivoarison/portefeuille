@@ -311,8 +311,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
                     if (n == 0)
                       const EtatVide(
                         titre: 'Aucun budget défini',
-                        message: 'Fixez une limite mensuelle par catégorie, '
-                            'par exemple 300 000 Ar pour l\'alimentation.',
+                        message: 'Appuyez sur le bouton + en haut à droite pour fixer une limite mensuelle par catégorie.',
                       ),
                     if (n > 0) ...[
                       Apparition(

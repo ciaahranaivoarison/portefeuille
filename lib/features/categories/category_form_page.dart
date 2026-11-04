@@ -122,7 +122,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
             controller: _nomCtrl,
             textCapitalization: TextCapitalization.sentences,
             decoration: InputDecoration(
-              hintText: tr('Ex. : Scolarité'),
+              hintText: tr('Nom de la catégorie'),
               prefixIcon: Icon(Icons.label_outline_rounded),
             ),
           ),
@@ -140,9 +140,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    "L'emoji est choisi automatiquement selon le nom : "
-                    '« Scolarité » donne 🎓, « Cadeau » donne 🎁. '
-                    'Un nom inconnu reçoit 🏷️.',
+                    "Un emoji est associé automatiquement au nom de la catégorie.",
                     style: TextStyle(fontSize: 12.5, color: p.texteDoux),
                   ),
                 ),

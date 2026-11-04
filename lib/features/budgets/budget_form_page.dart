@@ -220,7 +220,7 @@ class _BudgetFormPageState extends State<BudgetFormPage> {
                             color: p.principal,
                           ),
                           decoration: InputDecoration(
-                            hintText: tr('300000'),
+                            hintText: tr('0'),
                             filled: false,
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,

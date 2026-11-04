@@ -145,7 +145,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
                   controller: _nomCtrl,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    hintText: tr('Ex. : MVola, Banque, Espèces'),
+                    hintText: tr('Nom du compte'),
                     prefixIcon: Icon(Icons.badge_outlined),
                   ),
                 ),
