@@ -1,41 +1,53 @@
-import 'package:flutter/material.dart' hide Text;
-import 'package:gestion_argent/widgets/texte.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../core/app_theme.dart';
+import 'couleur_securite.dart';
 
 /// Points qui se remplissent au fil de la saisie d'un code PIN.
 class PointsPin extends StatelessWidget {
-  const PointsPin({super.key, required this.longueur, required this.remplis});
+  const PointsPin({
+    super.key,
+    required this.longueur,
+    required this.remplis,
+    this.erreur = false,
+  });
 
   final int longueur;
   final int remplis;
 
+  /// Si vrai, tous les points deviennent rouges.
+  final bool erreur;
+
   @override
   Widget build(BuildContext context) {
-    final p = context.pal;
+    final c = CouleurSecurite.de(context);
+    final couleur = erreur ? c.erreur : c.principal;
+
     return SizedBox(
-      height: 26,
+      height: 34,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           for (var i = 0; i < longueur; i++)
             AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
+              duration: const Duration(milliseconds: 200),
               curve: Curves.easeOutBack,
-              margin: const EdgeInsets.symmetric(horizontal: 9),
-              width: i < remplis ? 20 : 14,
-              height: i < remplis ? 20 : 14,
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              width: i < remplis ? 22 : 18,
+              height: i < remplis ? 22 : 18,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: i < remplis ? p.principal : Colors.transparent,
-                border: Border.all(
-                  color: i < remplis
-                      ? p.principal
-                      : p.texteDoux.withValues(alpha: 0.6),
-                  width: 1.6,
-                ),
+                color: (i < remplis || erreur)
+                    ? couleur
+                    : couleur.withValues(alpha: 0.22),
+                boxShadow: (i < remplis || erreur)
+                    ? [
+                        BoxShadow(
+                          color: couleur.withValues(alpha: 0.2),
+                          spreadRadius: 4,
+                        ),
+                      ]
+                    : null,
               ),
             ),
         ],
@@ -44,113 +56,175 @@ class PointsPin extends StatelessWidget {
   }
 }
 
-/// Pavé numérique rond (0 à 9, effacer, et bouton biométrie facultatif).
+/// Clavier de chiffres simple : pas de cadres, seulement les chiffres et
+/// une touche d'effacement.
 class PaveNumerique extends StatelessWidget {
   const PaveNumerique({
     super.key,
     required this.onChiffre,
     required this.onEffacer,
-    this.onBiometrie,
     this.actif = true,
   });
 
   final ValueChanged<String> onChiffre;
   final VoidCallback onEffacer;
-
-  /// Si elle est fournie, une touche empreinte apparaît en bas à gauche.
-  final VoidCallback? onBiometrie;
-
   final bool actif;
 
-  static const _taille = 72.0;
-
-  Widget _rond(BuildContext context, Widget contenu, VoidCallback onTap) {
-    final p = context.pal;
-    return Material(
-      color: p.surface,
-      shape: CircleBorder(side: BorderSide(color: p.bordure)),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: actif
-            ? () {
-                HapticFeedback.selectionClick();
-                onTap();
-              }
-            : null,
-        child: SizedBox(
-          width: _taille,
-          height: _taille,
-          child: Center(child: contenu),
-        ),
+  Widget _cellule(
+    BuildContext context, {
+    Widget? contenu,
+    VoidCallback? onTap,
+  }) {
+    final c = CouleurSecurite.de(context);
+    return Expanded(
+      child: SizedBox(
+        height: 68,
+        child: contenu == null
+            ? null
+            : InkResponse(
+                onTap: actif
+                    ? () {
+                        HapticFeedback.selectionClick();
+                        onTap?.call();
+                      }
+                    : null,
+                radius: 38,
+                highlightShape: BoxShape.circle,
+                splashColor: c.principal.withValues(alpha: 0.18),
+                highlightColor: c.principal.withValues(alpha: 0.10),
+                child: Center(child: contenu),
+              ),
       ),
     );
   }
 
   Widget _chiffre(BuildContext context, String n) {
-    final p = context.pal;
-    return _rond(
+    final c = CouleurSecurite.de(context);
+    return _cellule(
       context,
-      Text(
+      contenu: Text(
         n,
         style: TextStyle(
-          fontFamily: AppTheme.fontTitre,
-          fontSize: 28,
-          fontWeight: FontWeight.w600,
-          color: p.texte,
+          fontSize: 30,
+          fontWeight: FontWeight.w500,
+          color: c.texte,
         ),
       ),
-      () => onChiffre(n),
-    );
-  }
-
-  Widget _icone(BuildContext context, IconData icone, VoidCallback onTap) {
-    return _rond(context, Icon(icone, color: context.pal.principal), onTap);
-  }
-
-  Widget _ligne(List<Widget> touches) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          for (var i = 0; i < touches.length; i++) ...[
-            if (i > 0) const SizedBox(width: 20),
-            touches[i],
-          ],
-        ],
-      ),
+      onTap: () => onChiffre(n),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final biometrie = onBiometrie;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _ligne([
-          _chiffre(context, '1'),
-          _chiffre(context, '2'),
-          _chiffre(context, '3'),
-        ]),
-        _ligne([
-          _chiffre(context, '4'),
-          _chiffre(context, '5'),
-          _chiffre(context, '6'),
-        ]),
-        _ligne([
-          _chiffre(context, '7'),
-          _chiffre(context, '8'),
-          _chiffre(context, '9'),
-        ]),
-        _ligne([
-          biometrie != null
-              ? _icone(context, Icons.fingerprint, biometrie)
-              : const SizedBox(width: _taille, height: _taille),
-          _chiffre(context, '0'),
-          _icone(context, Icons.backspace_outlined, onEffacer),
-        ]),
-      ],
+    final c = CouleurSecurite.de(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              _chiffre(context, '1'),
+              _chiffre(context, '2'),
+              _chiffre(context, '3'),
+            ],
+          ),
+          Row(
+            children: [
+              _chiffre(context, '4'),
+              _chiffre(context, '5'),
+              _chiffre(context, '6'),
+            ],
+          ),
+          Row(
+            children: [
+              _chiffre(context, '7'),
+              _chiffre(context, '8'),
+              _chiffre(context, '9'),
+            ],
+          ),
+          Row(
+            children: [
+              _cellule(context),
+              _chiffre(context, '0'),
+              _cellule(
+                context,
+                contenu: Icon(
+                  Icons.backspace_outlined,
+                  size: 26,
+                  color: c.texte,
+                ),
+                onTap: onEffacer,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Gros bouton rond d'empreinte digitale, avec un halo qui pulse.
+class BoutonBiometrie extends StatefulWidget {
+  const BoutonBiometrie({super.key, required this.onTap, this.taille = 84});
+
+  final VoidCallback onTap;
+  final double taille;
+
+  @override
+  State<BoutonBiometrie> createState() => _BoutonBiometrieState();
+}
+
+class _BoutonBiometrieState extends State<BoutonBiometrie>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1600),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = CouleurSecurite.de(context);
+    final taille = widget.taille;
+
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, enfant) {
+        final t = Curves.easeInOut.transform(_ctrl.value);
+        return Container(
+          width: taille + 32,
+          height: taille + 32,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: c.principal.withValues(alpha: 0.08 + 0.08 * t),
+          ),
+          child: enfant,
+        );
+      },
+      child: Material(
+        color: c.principal,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: widget.onTap,
+          child: SizedBox(
+            width: taille,
+            height: taille,
+            child: Icon(
+              Icons.fingerprint,
+              size: taille * 0.55,
+              color: c.surPrincipal,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
