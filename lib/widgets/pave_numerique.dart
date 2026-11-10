@@ -1,7 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/app_theme.dart';
 import 'couleur_securite.dart';
+
+/// Couleurs des points et du pavé : celles de l'écran de verrouillage
+/// (blanc sur brun) ou celles du thème de l'application.
+class _Teintes {
+  const _Teintes({
+    required this.chiffre,
+    required this.point,
+    required this.erreur,
+    required this.eclat,
+  });
+
+  final Color chiffre;
+  final Color point;
+  final Color erreur;
+  final Color eclat;
+
+  static _Teintes de(BuildContext context, bool surColore) {
+    if (surColore) {
+      final c = CouleurSecurite.de(context);
+      return _Teintes(
+        chiffre: c.texte,
+        point: c.texte,
+        erreur: c.erreur,
+        eclat: c.texte,
+      );
+    }
+    final p = context.pal;
+    return _Teintes(
+      chiffre: p.texte,
+      point: p.principal,
+      erreur: p.depense,
+      eclat: p.principal,
+    );
+  }
+}
 
 /// Points qui se remplissent au fil de la saisie d'un code PIN.
 class PointsPin extends StatelessWidget {
@@ -10,18 +46,22 @@ class PointsPin extends StatelessWidget {
     required this.longueur,
     required this.remplis,
     this.erreur = false,
+    this.surColore = false,
   });
 
   final int longueur;
   final int remplis;
 
-  /// Si vrai, tous les points deviennent rouges.
+  /// Si vrai, tous les points prennent la couleur d'erreur.
   final bool erreur;
+
+  /// Vrai sur l'écran de verrouillage (points blancs sur fond brun).
+  final bool surColore;
 
   @override
   Widget build(BuildContext context) {
-    final c = CouleurSecurite.de(context);
-    final couleur = erreur ? c.erreur : c.principal;
+    final t = _Teintes.de(context, surColore);
+    final couleur = erreur ? t.erreur : t.point;
 
     return SizedBox(
       height: 34,
@@ -39,7 +79,7 @@ class PointsPin extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: (i < remplis || erreur)
                     ? couleur
-                    : couleur.withValues(alpha: 0.22),
+                    : couleur.withValues(alpha: surColore ? 0.35 : 0.22),
                 boxShadow: (i < remplis || erreur)
                     ? [
                         BoxShadow(
@@ -64,21 +104,29 @@ class PaveNumerique extends StatelessWidget {
     required this.onChiffre,
     required this.onEffacer,
     this.actif = true,
+    this.surColore = false,
+    this.hauteur = 68,
   });
 
   final ValueChanged<String> onChiffre;
   final VoidCallback onEffacer;
   final bool actif;
 
+  /// Vrai sur l'écran de verrouillage (chiffres blancs sur fond brun).
+  final bool surColore;
+
+  /// Hauteur d'une ligne de touches.
+  final double hauteur;
+
   Widget _cellule(
     BuildContext context, {
     Widget? contenu,
     VoidCallback? onTap,
   }) {
-    final c = CouleurSecurite.de(context);
+    final t = _Teintes.de(context, surColore);
     return Expanded(
       child: SizedBox(
-        height: 68,
+        height: hauteur,
         child: contenu == null
             ? null
             : InkResponse(
@@ -90,8 +138,8 @@ class PaveNumerique extends StatelessWidget {
                     : null,
                 radius: 38,
                 highlightShape: BoxShape.circle,
-                splashColor: c.principal.withValues(alpha: 0.18),
-                highlightColor: c.principal.withValues(alpha: 0.10),
+                splashColor: t.eclat.withValues(alpha: 0.18),
+                highlightColor: t.eclat.withValues(alpha: 0.10),
                 child: Center(child: contenu),
               ),
       ),
@@ -99,7 +147,7 @@ class PaveNumerique extends StatelessWidget {
   }
 
   Widget _chiffre(BuildContext context, String n) {
-    final c = CouleurSecurite.de(context);
+    final t = _Teintes.de(context, surColore);
     return _cellule(
       context,
       contenu: Text(
@@ -107,7 +155,7 @@ class PaveNumerique extends StatelessWidget {
         style: TextStyle(
           fontSize: 30,
           fontWeight: FontWeight.w500,
-          color: c.texte,
+          color: t.chiffre,
         ),
       ),
       onTap: () => onChiffre(n),
@@ -116,9 +164,9 @@ class PaveNumerique extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = CouleurSecurite.de(context);
+    final t = _Teintes.de(context, surColore);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -152,7 +200,7 @@ class PaveNumerique extends StatelessWidget {
                 contenu: Icon(
                   Icons.backspace_outlined,
                   size: 26,
-                  color: c.texte,
+                  color: t.chiffre,
                 ),
                 onTap: onEffacer,
               ),
@@ -164,9 +212,10 @@ class PaveNumerique extends StatelessWidget {
   }
 }
 
-/// Gros bouton rond d'empreinte digitale, avec un halo qui pulse.
+/// Gros bouton rond d'empreinte digitale : cercle translucide et halo
+/// qui pulse. Conçu pour l'écran de verrouillage (fond brun).
 class BoutonBiometrie extends StatefulWidget {
-  const BoutonBiometrie({super.key, required this.onTap, this.taille = 84});
+  const BoutonBiometrie({super.key, required this.onTap, this.taille = 92});
 
   final VoidCallback onTap;
   final double taille;
@@ -198,18 +247,18 @@ class _BoutonBiometrieState extends State<BoutonBiometrie>
       builder: (context, enfant) {
         final t = Curves.easeInOut.transform(_ctrl.value);
         return Container(
-          width: taille + 32,
-          height: taille + 32,
+          width: taille + 36,
+          height: taille + 36,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: c.principal.withValues(alpha: 0.08 + 0.08 * t),
+            color: c.texte.withValues(alpha: 0.05 + 0.07 * t),
           ),
           child: enfant,
         );
       },
       child: Material(
-        color: c.principal,
+        color: c.voile,
         shape: const CircleBorder(),
         child: InkWell(
           customBorder: const CircleBorder(),
@@ -219,8 +268,8 @@ class _BoutonBiometrieState extends State<BoutonBiometrie>
             height: taille,
             child: Icon(
               Icons.fingerprint,
-              size: taille * 0.55,
-              color: c.surPrincipal,
+              size: taille * 0.5,
+              color: c.texte,
             ),
           ),
         ),

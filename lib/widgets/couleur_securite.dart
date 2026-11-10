@@ -1,53 +1,82 @@
 import 'package:flutter/material.dart';
 
-/// Couleurs propres aux écrans de sécurité (code PIN, mot de passe,
-/// biométrie) : volontairement différentes du brun du reste de
-/// l'application. Pour changer la couleur de toute la sécurité,
-/// modifiez uniquement ce fichier.
+/// Couleurs de l'écran de verrouillage : fond brun-caramel, éléments
+/// blancs et translucides. Pour changer l'allure de cet écran, modifiez
+/// uniquement ce fichier.
 class CouleurSecurite {
   const CouleurSecurite._({
-    required this.principal,
-    required this.surPrincipal,
-    required this.fond,
+    required this.fondHaut,
+    required this.fondBas,
+    required this.panneau,
+    required this.bordurePanneau,
+    required this.voile,
     required this.texte,
     required this.douce,
+    required this.bouton,
+    required this.surBouton,
+    required this.champ,
     required this.erreur,
   });
 
-  /// Couleur des points, du bouton d'empreinte et des boutons.
-  final Color principal;
+  /// Haut du dégradé de fond.
+  final Color fondHaut;
 
-  /// Couleur de l'icône posée sur le bouton principal.
-  final Color surPrincipal;
+  /// Bas du dégradé de fond.
+  final Color fondBas;
 
-  /// Fond de l'écran de verrouillage.
-  final Color fond;
+  /// Panneau translucide qui contient le champ et le bouton.
+  final Color panneau;
 
-  /// Couleur des chiffres et des titres.
+  /// Fin liseré autour du panneau.
+  final Color bordurePanneau;
+
+  /// Cercles translucides (empreinte, pastilles du bas).
+  final Color voile;
+
+  /// Titres, chiffres et icônes.
   final Color texte;
 
-  /// Couleur des textes secondaires.
+  /// Textes secondaires.
   final Color douce;
 
-  /// Couleur des erreurs.
+  /// Fond du bouton « Déverrouiller ».
+  final Color bouton;
+
+  /// Texte et icônes posés sur les éléments blancs.
+  final Color surBouton;
+
+  /// Couleur du mot de passe saisi.
+  final Color champ;
+
+  /// Messages d'erreur.
   final Color erreur;
 
   static const _clair = CouleurSecurite._(
-    principal: Color(0xFF2F80ED),
-    surPrincipal: Color(0xFFFFFFFF),
-    fond: Color(0xFFEAF2FF),
-    texte: Color(0xFF1D2B44),
-    douce: Color(0xFF6C7A93),
-    erreur: Color(0xFFE5534B),
+    fondHaut: Color(0xFFC1844F),
+    fondBas: Color(0xFFB27546),
+    panneau: Color(0x2EFFFFFF),
+    bordurePanneau: Color(0x59FFFFFF),
+    voile: Color(0x38FFFFFF),
+    texte: Color(0xFFFFFFFF),
+    douce: Color(0xCCFFFFFF),
+    bouton: Color(0xFFFFFFFF),
+    surBouton: Color(0xFFB87A4C),
+    champ: Color(0xFF5A3A28),
+    erreur: Color(0xFFFFD9CF),
   );
 
   static const _sombre = CouleurSecurite._(
-    principal: Color(0xFF6AA9FF),
-    surPrincipal: Color(0xFF14233B),
-    fond: Color(0xFF1F2B3F),
-    texte: Color(0xFFEAF1FF),
-    douce: Color(0xFFA9B8D1),
-    erreur: Color(0xFFFF8A80),
+    fondHaut: Color(0xFF7C5539),
+    fondBas: Color(0xFF63402B),
+    panneau: Color(0x24FFFFFF),
+    bordurePanneau: Color(0x4DFFFFFF),
+    voile: Color(0x2EFFFFFF),
+    texte: Color(0xFFFFF4E8),
+    douce: Color(0xCCFFF4E8),
+    bouton: Color(0xFFFFF4E8),
+    surBouton: Color(0xFF7C5539),
+    champ: Color(0xFF4A2F20),
+    erreur: Color(0xFFFFB9A8),
   );
 
   static CouleurSecurite de(BuildContext context) =>

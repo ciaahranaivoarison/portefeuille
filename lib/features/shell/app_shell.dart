@@ -174,8 +174,7 @@ class _Entree extends StatelessWidget {
             ),
             const SizedBox(height: 3),
             AnimatedDefaultTextStyle(
-              duration: duree,
-              style: TextStyle(
+              duration: duree,              style: TextStyle(
                 fontSize: 11,
                 fontWeight: actif ? FontWeight.w700 : FontWeight.w500,
                 color: actif ? p.principal : p.texteDoux,

@@ -521,6 +521,13 @@ final Map<String, (String, String)> dictionnaire = {
   ),
   'Cette action est irréversible.': ('This action cannot be undone.', 'Tsy azo averina ity hetsika ity.'),
   'Enregistrer la sauvegarde': ('Save the backup', 'Tehirizina ny tahiry'),
+  "Touchez pour utiliser l'empreinte": (
+    'Tap to use your fingerprint',
+    'Tsindrio hampiasa ny rantsan-tànana',
+  ),
+  'Hors ligne': ('Offline', 'Tsy mila Internet'),
+  'Données privées': ('Private data', 'Angona manokana'),
+  'Sécurisé': ('Secure', 'Voaaro'),
   'Écrivez ici': ('Write here', 'Soraty eto'),
   'Appuyez sur le bouton + en haut à droite pour fixer une limite mensuelle par catégorie.': (
     'Tap the + button at the top right to set a monthly limit per category.',

@@ -147,78 +147,208 @@ class _LockScreenState extends State<LockScreen> {
     );
   }
 
-  Widget _champMotDePasse(CouleurSecurite c, bool sombre) {
+  /// Champ blanc arrondi : cadenas à gauche, œil à droite.
+  Widget _champMotDePasse(CouleurSecurite c) {
     final bordure = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide(color: c.principal.withValues(alpha: 0.35)),
+      borderRadius: BorderRadius.circular(30),
+      borderSide: BorderSide.none,
     );
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: TextField(
-        controller: _motDePasseCtrl,
-        obscureText: _masque,
-        enabled: _attente == 0,
-        onSubmitted: _verifier,
-        style: TextStyle(color: c.texte, fontSize: 16),
-        decoration: InputDecoration(
-          hintText: tr('Mot de passe'),
-          hintStyle: TextStyle(color: c.douce),
-          filled: true,
-          fillColor: sombre
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.white.withValues(alpha: 0.85),
-          prefixIcon: Icon(Icons.lock_outline_rounded, color: c.douce),
-          suffixIcon: IconButton(
-            icon: Icon(
-              _masque
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
-              color: c.douce,
-            ),
-            onPressed: () => setState(() => _masque = !_masque),
+    return TextField(
+      controller: _motDePasseCtrl,
+      obscureText: _masque,
+      enabled: _attente == 0,
+      onSubmitted: _verifier,
+      cursorColor: c.surBouton,
+      style: TextStyle(color: c.champ, fontSize: 17),
+      decoration: InputDecoration(
+        hintText: tr('Mot de passe'),
+        hintStyle: TextStyle(color: c.surBouton.withValues(alpha: 0.55)),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+        prefixIcon: Icon(Icons.lock_outline_rounded, color: c.surBouton),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _masque ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            color: c.surBouton.withValues(alpha: 0.7),
           ),
-          border: bordure,
-          enabledBorder: bordure,
-          disabledBorder: bordure,
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: c.principal, width: 1.8),
+          onPressed: () => setState(() => _masque = !_masque),
+        ),
+        border: bordure,
+        enabledBorder: bordure,
+        disabledBorder: bordure,
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(
+            color: c.surBouton.withValues(alpha: 0.6),
+            width: 1.6,
           ),
         ),
       ),
     );
   }
 
+  /// Bouton blanc « Déverrouiller » au texte brun.
   Widget _boutonDeverrouiller(CouleurSecurite c) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
       child: FilledButton(
         onPressed:
             _attente > 0 ? null : () => _verifier(_motDePasseCtrl.text),
         style: FilledButton.styleFrom(
-          backgroundColor: c.principal,
-          foregroundColor: c.surPrincipal,
+          backgroundColor: c.bouton,
+          foregroundColor: c.surBouton,
+          disabledBackgroundColor: c.bouton.withValues(alpha: 0.5),
+          disabledForegroundColor: c.surBouton.withValues(alpha: 0.6),
+          shape: const StadiumBorder(),
+          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
         ),
         child: const Text('Déverrouiller'),
       ),
     );
   }
 
-  /// Gros bouton d'empreinte si la biométrie est active, sinon un cadenas.
-  Widget _zoneCentrale(CouleurSecurite c, bool pin) {
-    if (_biometrie) {
-      return Center(child: BoutonBiometrie(onTap: _essayerBiometrie));
-    }
-    if (!pin) return const SizedBox.shrink();
-    return Center(
-      child: Container(
-        width: 96,
-        height: 96,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: c.principal.withValues(alpha: 0.10),
+  /// Message d'erreur. En mode PIN, sa hauteur est fixe pour que le
+  /// pavé ne bouge pas quand le message apparaît.
+  Widget _zoneMessage(CouleurSecurite c, String message, {required bool fixe}) {
+    final texte = Text(
+      message,
+      key: ValueKey<String>(message),
+      textAlign: TextAlign.center,
+      style: TextStyle(color: c.erreur, fontWeight: FontWeight.w700),
+    );
+    if (fixe) {
+      return SizedBox(
+        height: 40,
+        child: Center(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: texte,
+          ),
         ),
-        child: Icon(Icons.lock_outline_rounded, size: 42, color: c.principal),
+      );
+    }
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 200),
+      alignment: Alignment.topCenter,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: message.isEmpty ? 8 : 12),
+        child: message.isEmpty ? const SizedBox(height: 0) : texte,
+      ),
+    );
+  }
+
+  /// Cercle blanc avec cadenas brun, posé à cheval sur le panneau.
+  Widget _cercleCadenas(CouleurSecurite c) {
+    return Container(
+      width: 84,
+      height: 84,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: c.surBouton.withValues(alpha: 0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Icon(Icons.lock_outline_rounded, size: 40, color: c.surBouton),
+    );
+  }
+
+  Widget _panneau(CouleurSecurite c, bool pin, String message) {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: [
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(top: 42),
+          padding: EdgeInsets.fromLTRB(20, 58, 20, pin ? 10 : 22),
+          decoration: BoxDecoration(
+            color: c.panneau,
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: c.bordurePanneau),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                pin ? 'Saisissez votre code PIN' : 'Saisissez votre mot de passe',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w500,
+                  color: c.texte,
+                ),
+              ),
+              const SizedBox(height: 18),
+              _secousse(
+                child: pin
+                    ? PointsPin(
+                        longueur: _longueur,
+                        remplis: _saisie.length,
+                        erreur: _erreur != null && _saisie.isEmpty,
+                        surColore: true,
+                      )
+                    : _champMotDePasse(c),
+              ),
+              _zoneMessage(c, message, fixe: pin),
+              if (pin)
+                PaveNumerique(
+                  onChiffre: _toucher,
+                  onEffacer: _effacer,
+                  actif: _attente == 0,
+                  surColore: true,
+                  hauteur: 60,
+                )
+              else
+                _boutonDeverrouiller(c),
+            ],
+          ),
+        ),
+        _cercleCadenas(c),
+      ],
+    );
+  }
+
+  Widget _blocBiometrie(CouleurSecurite c, bool pin) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        BoutonBiometrie(onTap: _essayerBiometrie, taille: pin ? 64 : 92),
+        const SizedBox(height: 8),
+        Text(
+          "Touchez pour utiliser l'empreinte",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 15, color: c.texte),
+        ),
+      ],
+    );
+  }
+
+  Widget _pastille(CouleurSecurite c, IconData icone, String libelle) {
+    return SizedBox(
+      width: 104,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: c.voile),
+            child: Icon(icone, color: c.texte, size: 26),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            libelle,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, height: 1.2, color: c.texte),
+          ),
+        ],
       ),
     );
   }
@@ -226,111 +356,111 @@ class _LockScreenState extends State<LockScreen> {
   @override
   Widget build(BuildContext context) {
     final c = CouleurSecurite.de(context);
-    final sombre = Theme.of(context).brightness == Brightness.dark;
     final pin = _type == 'pin';
     final message = _attente > 0
         ? "Trop d'essais. Réessayez dans $_attente s."
         : (_erreur ?? '');
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: (sombre ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
-          .copyWith(
+      value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: Colors.transparent,
-        systemNavigationBarColor: c.fond,
-        systemNavigationBarIconBrightness:
-            sombre ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: c.fondBas,
+        systemNavigationBarIconBrightness: Brightness.light,
       ),
       child: Scaffold(
-        backgroundColor: c.fond,
-        appBar: widget.annulable
-            ? AppBar(
-                backgroundColor: c.fond,
-                foregroundColor: c.texte,
-                elevation: 0,
-                scrolledUnderElevation: 0,
-              )
-            : null,
-        body: SafeArea(
-          child: !_pret
-              ? Center(child: CircularProgressIndicator(color: c.principal))
-              : LayoutBuilder(
-                  builder: (context, contraintes) => SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints:
-                          BoxConstraints(minHeight: contraintes.maxHeight),
-                      child: IntrinsicHeight(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            const SizedBox(height: 28),
-                            Text(
-                              widget.titre ?? "Gestion d'argent",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                letterSpacing: 1.2,
-                                fontWeight: FontWeight.w700,
-                                color: c.douce,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            Text(
-                              pin
-                                  ? 'Saisissez votre code PIN'
-                                  : 'Saisissez votre mot de passe',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w500,
-                                color: c.texte,
-                              ),
-                            ),
-                            const SizedBox(height: 30),
-                            _secousse(
-                              child: pin
-                                  ? PointsPin(
-                                      longueur: _longueur,
-                                      remplis: _saisie.length,
-                                      erreur:
-                                          _erreur != null && _saisie.isEmpty,
-                                    )
-                                  : _champMotDePasse(c, sombre),
-                            ),
-                            SizedBox(
-                              height: 48,
-                              child: Center(
-                                child: AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 200),
-                                  child: Text(
-                                    message,
-                                    key: ValueKey<String>(message),
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: c.erreur,
-                                      fontWeight: FontWeight.w600,
+        backgroundColor: c.fondBas,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [c.fondHaut, c.fondBas],
+            ),
+          ),
+          child: SafeArea(
+            child: !_pret
+                ? Center(child: CircularProgressIndicator(color: c.texte))
+                : LayoutBuilder(
+                    builder: (context, contraintes) => SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: contraintes.maxHeight,
+                        ),
+                        child: IntrinsicHeight(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (widget.annulable)
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.only(left: 6, top: 2),
+                                    child: IconButton(
+                                      icon: Icon(
+                                        Icons.arrow_back_rounded,
+                                        color: c.texte,
+                                      ),
+                                      onPressed: () =>
+                                          Navigator.of(context).maybePop(),
                                     ),
                                   ),
+                                )
+                              else
+                                const SizedBox(height: 22),
+                              Text(
+                                widget.titre ?? "Gestion d'argent",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w700,
+                                  color: c.texte,
                                 ),
                               ),
-                            ),
-                            const Spacer(),
-                            _zoneCentrale(c, pin),
-                            const Spacer(),
-                            if (pin)
-                              PaveNumerique(
-                                onChiffre: _toucher,
-                                onEffacer: _effacer,
-                                actif: _attente == 0,
-                              )
-                            else
-                              _boutonDeverrouiller(c),
-                            const SizedBox(height: 18),
-                          ],
+                              const SizedBox(height: 10),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 26),
+                                child: _panneau(c, pin, message),
+                              ),
+                              const SizedBox(height: 22),
+                              if (_biometrie)
+                                Center(child: _blocBiometrie(c, pin)),
+                              const Spacer(),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _pastille(
+                                      c,
+                                      Icons.wifi_off_rounded,
+                                      'Hors ligne',
+                                    ),
+                                    _pastille(
+                                      c,
+                                      Icons.smartphone_rounded,
+                                      'Données privées',
+                                    ),
+                                    _pastille(
+                                      c,
+                                      Icons.verified_user_outlined,
+                                      'Sécurisé',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 18),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
+          ),
         ),
       ),
     );
