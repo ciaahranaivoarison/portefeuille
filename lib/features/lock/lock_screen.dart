@@ -5,11 +5,13 @@ import 'package:flutter/material.dart' hide Text;
 import 'package:flutter/services.dart';
 import 'package:gestion_argent/widgets/texte.dart';
 
+import '../../core/empreinte_native.dart';
 import '../../core/security_service.dart';
 import '../../widgets/couleur_securite.dart';
 import '../../widgets/pave_numerique.dart';
 
-/// Écran de verrouillage : demande le code PIN ou le mot de passe.
+/// Écran de verrouillage : demande le code PIN ou le mot de passe, et lit
+/// l'empreinte digitale automatiquement si la biométrie est activée.
 /// Sert au lancement de l'application et à confirmer son identité
 /// avant de modifier ou de désactiver la protection.
 class LockScreen extends StatefulWidget {
@@ -30,55 +32,133 @@ class LockScreen extends StatefulWidget {
   State<LockScreen> createState() => _LockScreenState();
 }
 
-class _LockScreenState extends State<LockScreen> {
+class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
   final _service = SecurityService.instance;
   final _motDePasseCtrl = TextEditingController();
 
   String _type = 'pin';
   int _longueur = 4;
   bool _biometrie = false;
+  bool _natif = false;
+  bool _scan = false;
   bool _pret = false;
 
   String _saisie = '';
   bool _masque = true;
   String? _erreur;
+  String? _messageEmpreinte;
   int _echecs = 0;
   int _secousses = 0;
   int _attente = 0;
   Timer? _minuteur;
+  StreamSubscription<ResultatEmpreinte>? _abonnement;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _abonnement = EmpreinteNative.instance.evenements.listen(_surEvenement);
     _init();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _abonnement?.cancel();
+    EmpreinteNative.instance.arreter();
     _minuteur?.cancel();
     _motDePasseCtrl.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState etat) {
+    if (!mounted) return;
+    if (etat == AppLifecycleState.resumed) {
+      if (_pret && _biometrie && _natif && !_scan) _demarrerScan();
+    } else if (_scan) {
+      setState(() => _scan = false);
+    }
   }
 
   Future<void> _init() async {
     final type = await _service.type();
     final longueur = await _service.longueurPin();
     final bio = widget.autoriserBiometrie && await _service.biometrieActive();
+    final natif = bio && await EmpreinteNative.instance.disponible();
     if (!mounted) return;
     setState(() {
       _type = type;
       _longueur = longueur;
       _biometrie = bio;
+      _natif = natif;
       _pret = true;
     });
-    if (bio) _essayerBiometrie();
+    if (bio) {
+      if (natif) {
+        _demarrerScan();
+      } else {
+        _essayerBiometrie();
+      }
+    }
   }
 
+  /// Lance la lecture d'empreinte intégrée (sans fenêtre système).
+  Future<void> _demarrerScan() async {
+    if (!mounted || !_natif || !_biometrie) return;
+    setState(() {
+      _scan = true;
+      _messageEmpreinte = null;
+    });
+    await EmpreinteNative.instance.demarrer();
+  }
+
+  /// Solution de secours : la fenêtre d'empreinte ou de visage du système.
   Future<void> _essayerBiometrie() async {
     final ok = await _service.authentifierBiometrie(
       tr("Déverrouillez Gestion d'argent"),
     );
     if (ok && mounted) widget.onUnlocked();
+  }
+
+  void _toucherEmpreinte() {
+    if (_natif) {
+      _demarrerScan();
+    } else {
+      _essayerBiometrie();
+    }
+  }
+
+  void _surEvenement(ResultatEmpreinte e) {
+    if (!mounted || !_biometrie) return;
+    if (e.type == 'succes') {
+      widget.onUnlocked();
+    } else if (e.type == 'echec') {
+      setState(() {
+        _messageEmpreinte = 'Empreinte non reconnue. Réessayez.';
+        _secousses++;
+      });
+    } else if (e.type == 'erreur') {
+      final code = e.detail;
+      if (code == '2' || code == '3') {
+        // Lecture illisible ou délai dépassé : on relance.
+        Future<void>.delayed(const Duration(milliseconds: 600), () {
+          if (mounted && _scan) _demarrerScan();
+        });
+      } else if (code == '7' || code == '9') {
+        setState(() {
+          _scan = false;
+          _messageEmpreinte = "Trop d'essais d'empreinte. Utilisez votre code.";
+        });
+      } else {
+        setState(() {
+          _scan = false;
+          _natif = false;
+          _messageEmpreinte =
+              "Capteur d'empreinte indisponible. Utilisez votre code.";
+        });
+      }
+    }
   }
 
   Future<void> _verifier(String code) async {
@@ -124,6 +204,7 @@ class _LockScreenState extends State<LockScreen> {
     setState(() {
       _saisie += chiffre;
       _erreur = null;
+      _messageEmpreinte = null;
     });
     if (_saisie.length == _longueur) _verifier(_saisie);
   }
@@ -315,14 +396,17 @@ class _LockScreenState extends State<LockScreen> {
     );
   }
 
+  /// Bouton d'empreinte : la lecture est déjà lancée automatiquement.
   Widget _blocBiometrie(CouleurSecurite c, bool pin) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        BoutonBiometrie(onTap: _essayerBiometrie, taille: pin ? 64 : 92),
+        BoutonBiometrie(onTap: _toucherEmpreinte, taille: pin ? 64 : 92),
         const SizedBox(height: 8),
         Text(
-          "Touchez pour utiliser l'empreinte",
+          _scan
+              ? 'Posez votre doigt sur le capteur'
+              : "Touchez pour utiliser l'empreinte",
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 15, color: c.texte),
         ),
@@ -359,7 +443,7 @@ class _LockScreenState extends State<LockScreen> {
     final pin = _type == 'pin';
     final message = _attente > 0
         ? "Trop d'essais. Réessayez dans $_attente s."
-        : (_erreur ?? '');
+        : (_erreur ?? _messageEmpreinte ?? '');
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(

@@ -521,6 +521,22 @@ final Map<String, (String, String)> dictionnaire = {
   ),
   'Cette action est irréversible.': ('This action cannot be undone.', 'Tsy azo averina ity hetsika ity.'),
   'Enregistrer la sauvegarde': ('Save the backup', 'Tehirizina ny tahiry'),
+  'Posez votre doigt sur le capteur': (
+    'Place your finger on the sensor',
+    'Apetraho eo amin’ny sensor ny rantsan-tànanao',
+  ),
+  'Empreinte non reconnue. Réessayez.': (
+    'Fingerprint not recognized. Try again.',
+    'Tsy fantatra ny rantsan-tànana. Andramo indray.',
+  ),
+  "Trop d'essais d'empreinte. Utilisez votre code.": (
+    'Too many fingerprint attempts. Use your code.',
+    'Be loatra ny andrana rantsan-tànana. Ampiasao ny kaodinao.',
+  ),
+  "Capteur d'empreinte indisponible. Utilisez votre code.": (
+    'Fingerprint sensor unavailable. Use your code.',
+    'Tsy azo ampiasaina ny sensor rantsan-tànana. Ampiasao ny kaodinao.',
+  ),
   "Touchez pour utiliser l'empreinte": (
     'Tap to use your fingerprint',
     'Tsindrio hampiasa ny rantsan-tànana',
