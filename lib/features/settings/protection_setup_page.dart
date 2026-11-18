@@ -306,7 +306,7 @@ class _ProtectionSetupPageState extends State<ProtectionSetupPage> {
               transitionBuilder: (child, animation) =>
                   ScaleTransition(scale: animation, child: child),
               child: PastilleEmoji(
-                _pin ? '🔢' : '🔤',
+                _pin ? ':hash:' : ':type:',
                 taille: 74,
                 key: ValueKey<String>(_type),
               ),
@@ -329,7 +329,7 @@ class _ProtectionSetupPageState extends State<ProtectionSetupPage> {
             children: [
               Expanded(
                 child: CarteChoix(
-                  emoji: '🔢',
+                  emoji: ':hash:',
                   libelle: 'Code PIN',
                   actif: _pin,
                   onTap: () => _changerType('pin'),
@@ -338,7 +338,7 @@ class _ProtectionSetupPageState extends State<ProtectionSetupPage> {
               const SizedBox(width: 10),
               Expanded(
                 child: CarteChoix(
-                  emoji: '🔤',
+                  emoji: ':type:',
                   libelle: 'Mot de passe',
                   actif: !_pin,
                   onTap: () => _changerType('password'),
@@ -376,7 +376,7 @@ class _ProtectionSetupPageState extends State<ProtectionSetupPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('💡', style: TextStyle(fontSize: 18)),
+                const Text(':lightbulb:', style: TextStyle(fontSize: 18)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(

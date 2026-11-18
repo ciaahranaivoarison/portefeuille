@@ -37,7 +37,7 @@ class ChipChoix extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (emoji != null) ...[
-              Text(emoji!, style: const TextStyle(fontSize: 14)),
+              Text(emoji!, style: TextStyle(fontSize: 14, color: actif ? p.surPrincipal : p.principal)),
               const SizedBox(width: 6),
             ],
             Text(
@@ -102,7 +102,7 @@ class CarteChoix extends StatelessWidget {
               scale: actif ? 1.15 : 1.0,
               duration: duree,
               curve: Curves.easeOutBack,
-              child: Text(emoji, style: const TextStyle(fontSize: 26)),
+              child: Text(emoji, style: TextStyle(fontSize: 26, color: actif ? c : p.texteDoux)),
             ),
             const SizedBox(height: 6),
             Text(

@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             Expanded(
               child: _CarteMini(
-                emoji: '💵',
+                emoji: ':banknote:',
                 label: 'Revenus du mois',
                 montant: revenus,
                 couleur: p.revenu,
@@ -85,7 +85,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(width: 12),
             Expanded(
               child: _CarteMini(
-                emoji: '💸',
+                emoji: ':expense:',
                 label: 'Dépenses du mois',
                 montant: depenses,
                 couleur: p.depense,
@@ -104,7 +104,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Row(
                   children: [
-                    const PastilleEmoji('🏦', taille: 42),
+                    const PastilleEmoji(':landmark:', taille: 42),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
@@ -213,7 +213,7 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.only(bottom: 24),
             children: [
               EnteteEcran(
-                emoji: '💰',
+                emoji: ':wallet:',
                 titre: "Gestion d'argent",
                 sousTitre: 'Votre carnet de comptes',
                 etiquette: 'ARGENT TOTAL DISPONIBLE',

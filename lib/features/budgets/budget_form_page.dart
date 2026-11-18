@@ -40,7 +40,7 @@ class _BudgetFormPageState extends State<BudgetFormPage> {
     for (final c in _disponibles) {
       if (c.id == _categorieId) return emojiCategorie(c.name);
     }
-    return '🎯';
+    return ':target:';
   }
 
   @override

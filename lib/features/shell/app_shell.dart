@@ -21,11 +21,11 @@ class _AppShellState extends State<AppShell> {
   int _index = 0;
 
   static const _entrees = <(String, String)>[
-    ('💰', 'Accueil'),
-    ('💳', 'Comptes'),
-    ('🧾', 'Historique'),
-    ('🎯', 'Budgets'),
-    ('📊', 'Stats'),
+    (':wallet:', 'Accueil'),
+    (':credit-card:', 'Comptes'),
+    (':receipt:', 'Historique'),
+    (':target:', 'Budgets'),
+    (':bar-chart:', 'Stats'),
   ];
 
   Widget _page(int i) => switch (i) {
@@ -170,7 +170,7 @@ class _Entree extends StatelessWidget {
               scale: actif ? 1.2 : 1.0,
               duration: duree,
               curve: Curves.easeOutBack,
-              child: Text(emoji, style: const TextStyle(fontSize: 22)),
+              child: Text(emoji, style: TextStyle(fontSize: 22, color: actif ? p.principal : p.texteDoux)),
             ),
             const SizedBox(height: 3),
             AnimatedDefaultTextStyle(

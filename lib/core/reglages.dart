@@ -14,9 +14,9 @@ class Reglages extends ChangeNotifier {
 
   /// Langues proposées : code, drapeau, nom dans la langue elle-même.
   static const langues = <(String, String, String)>[
-    ('fr', '🇫🇷', 'Français'),
-    ('en', '🇬🇧', 'English'),
-    ('mg', '🇲🇬', 'Malagasy'),
+    ('fr', ':flag-fr:', 'Français'),
+    ('en', ':flag-gb:', 'English'),
+    ('mg', ':flag-mg:', 'Malagasy'),
   ];
 
   ThemeMode _mode = ThemeMode.light;

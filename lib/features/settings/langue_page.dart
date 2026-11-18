@@ -22,7 +22,7 @@ class LanguePage extends StatelessWidget {
           body: ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
             children: [
-              const Center(child: PastilleEmoji('🌐', taille: 74)),
+              const Center(child: PastilleEmoji(':globe:', taille: 74)),
               const SizedBox(height: 14),
               Center(
                 child: Text(
@@ -86,7 +86,7 @@ class MEmoji extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Text('💡', style: TextStyle(fontSize: 18));
+    return const Text(':lightbulb:', style: TextStyle(fontSize: 18));
   }
 }
 

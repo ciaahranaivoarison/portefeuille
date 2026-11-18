@@ -12,11 +12,11 @@ import '../../widgets/entete_ecran.dart';
 import '../../widgets/ui.dart';
 
 const _periodes = [
-  ('jour', '☀️', "Aujourd'hui"),
-  ('semaine', '🗓️', 'Cette semaine'),
-  ('mois', '📆', 'Ce mois'),
-  ('precedent', '⏪', 'Mois précédent'),
-  ('perso', '🎛️', 'Personnalisée'),
+  ('jour', ':sun:', "Aujourd'hui"),
+  ('semaine', ':calendar-week:', 'Cette semaine'),
+  ('mois', ':calendar-month:', 'Ce mois'),
+  ('precedent', ':rewind:', 'Mois précédent'),
+  ('perso', ':sliders:', 'Personnalisée'),
 ];
 
 const _moisCourt = [
@@ -145,7 +145,7 @@ class _StatsPageState extends State<StatsPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Text(
-        '🌿 Aucune dépense sur cette période.',
+        ':leaf: Aucune dépense sur cette période.',
         style: TextStyle(color: context.pal.texteDoux),
       ),
     );
@@ -350,7 +350,7 @@ class _StatsPageState extends State<StatsPage> {
             padding: const EdgeInsets.only(bottom: 24),
             children: [
               EnteteEcran(
-                emoji: '📊',
+                emoji: ':bar-chart:',
                 titre: 'Statistiques',
                 sousTitre: plageTexte,
                 etiquette: 'SOLDE DE LA PÉRIODE',
@@ -369,7 +369,7 @@ class _StatsPageState extends State<StatsPage> {
                         children: [
                           Expanded(
                             child: _CarteMini(
-                              emoji: '💵',
+                              emoji: ':banknote:',
                               label: 'Revenus',
                               montant: s.income,
                               couleur: p.revenu,
@@ -378,7 +378,7 @@ class _StatsPageState extends State<StatsPage> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _CarteMini(
-                              emoji: '💸',
+                              emoji: ':expense:',
                               label: 'Dépenses',
                               montant: s.expense,
                               couleur: p.depense,

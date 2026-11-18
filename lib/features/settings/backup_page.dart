@@ -259,7 +259,7 @@ class _BackupPageState extends State<BackupPage> {
             index: 0,
             child: _bloc(
               p,
-              '💾',
+              ':save:',
               'Vos données restent à vous',
               'La sauvegarde contient vos comptes, catégories, budgets et '
                   'opérations, dans un fichier .json. Elle se fait sans '
@@ -272,7 +272,7 @@ class _BackupPageState extends State<BackupPage> {
             index: 1,
             child: _bloc(
               p,
-              '🕒',
+              ':clock:',
               'Dernière sauvegarde',
               _derniere == null ? 'Jamais' : _dateHeure(_derniere!),
             ),
@@ -299,7 +299,7 @@ class _BackupPageState extends State<BackupPage> {
             index: 2,
             child: _bloc(
               p,
-              '⚠️',
+              ':alert-triangle:',
               'Attention',
               'La restauration remplace toutes les données actuelles par '
                   'celles du fichier choisi.',

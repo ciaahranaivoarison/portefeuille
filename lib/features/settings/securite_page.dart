@@ -161,9 +161,9 @@ class _SecuritePageState extends State<SecuritePage> {
             transitionBuilder: (child, animation) =>
                 ScaleTransition(scale: animation, child: child),
             child: Text(
-              _active ? '🛡️' : '🔓',
+              _active ? ':shield-check:' : ':unlock:',
               key: ValueKey<bool>(_active),
-              style: const TextStyle(fontSize: 46),
+              style: TextStyle(fontSize: 46, color: p.surHero),
             ),
           ),
           const SizedBox(width: 16),
@@ -232,7 +232,7 @@ class _SecuritePageState extends State<SecuritePage> {
                   child: CarteRubriques(
                     enfants: [
                       _LigneSwitch(
-                        emoji: '🔑',
+                        emoji: ':key:',
                         titre: 'Protection par code',
                         sousTitre: _detailProtection,
                         valeur: _active,
@@ -243,7 +243,7 @@ class _SecuritePageState extends State<SecuritePage> {
                         child: IgnorePointer(
                           ignoring: !_active,
                           child: Rubrique(
-                            emoji: '✏️',
+                            emoji: ':pencil:',
                             titre: 'Modifier le code',
                             sousTitre: 'Changer de code PIN ou de mot de passe',
                             onTap: _modifierCode,
@@ -259,7 +259,7 @@ class _SecuritePageState extends State<SecuritePage> {
                   child: CarteRubriques(
                     enfants: [
                       _LigneSwitch(
-                        emoji: '👆',
+                        emoji: ':fingerprint:',
                         titre: 'Empreinte digitale ou visage',
                         sousTitre: _texteBiometrie,
                         valeur: _biometrie,
@@ -280,21 +280,21 @@ class _SecuritePageState extends State<SecuritePage> {
                         children: [
                           _info(
                             p,
-                            '🔐',
+                            ':lock:',
                             "Votre code n'est jamais enregistré en clair : "
                                 'seule une empreinte chiffrée reste sur le '
                                 'téléphone.',
                           ),
                           _info(
                             p,
-                            '📱',
+                            ':smartphone:',
                             "L'empreinte et le visage sont gérés par Android. "
                                 "L'application reçoit seulement « réussi » ou "
                                 '« échoué ».',
                           ),
                           _info(
                             p,
-                            '⏱️',
+                            ':timer:',
                             'Après 5 erreurs, le déverrouillage est bloqué '
                                 'pendant 30 secondes.',
                           ),

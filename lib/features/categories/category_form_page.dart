@@ -136,7 +136,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('💡', style: TextStyle(fontSize: 18)),
+                const Text(':lightbulb:', style: TextStyle(fontSize: 18)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(

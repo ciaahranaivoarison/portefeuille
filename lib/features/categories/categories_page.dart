@@ -147,8 +147,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
             children: [
               SegmentedButton<String>(
                 segments: const [
-                  ButtonSegment(value: 'expense', label: Text('💸 Dépenses')),
-                  ButtonSegment(value: 'income', label: Text('💵 Revenus')),
+                  ButtonSegment(value: 'expense', label: Text(':expense: Dépenses')),
+                  ButtonSegment(value: 'income', label: Text(':banknote: Revenus')),
                 ],
                 selected: {_type},
                 showSelectedIcon: false,
@@ -164,7 +164,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('💡', style: TextStyle(fontSize: 18)),
+                    const Text(':lightbulb:', style: TextStyle(fontSize: 18)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(

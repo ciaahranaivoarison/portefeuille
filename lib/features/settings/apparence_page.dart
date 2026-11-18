@@ -22,7 +22,7 @@ class ApparencePage extends StatelessWidget {
           body: ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
             children: [
-              const Center(child: PastilleEmoji('🎨', taille: 74)),
+              const Center(child: PastilleEmoji(':palette:', taille: 74)),
               const SizedBox(height: 14),
               Center(
                 child: Text(
@@ -39,7 +39,7 @@ class ApparencePage extends StatelessWidget {
               Apparition(
                 index: 0,
                 child: _CarteMode(
-                  emoji: '☀️',
+                  emoji: ':sun:',
                   titre: 'Mode clair',
                   description: 'Fond crème, pour la journée',
                   apercu: const _Apercu(Palette.clair),
@@ -51,7 +51,7 @@ class ApparencePage extends StatelessWidget {
               Apparition(
                 index: 1,
                 child: _CarteMode(
-                  emoji: '🌙',
+                  emoji: ':moon:',
                   titre: 'Mode sombre',
                   description: 'Bruns chocolat, reposant le soir',
                   apercu: const _Apercu(Palette.sombre),
@@ -63,7 +63,7 @@ class ApparencePage extends StatelessWidget {
               Apparition(
                 index: 2,
                 child: _CarteMode(
-                  emoji: '📱',
+                  emoji: ':smartphone:',
                   titre: 'Automatique',
                   description: 'Suit le réglage de votre téléphone',
                   apercu: const _ApercuMoitie(),
@@ -81,7 +81,7 @@ class ApparencePage extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('💡', style: TextStyle(fontSize: 18)),
+                    const Text(':lightbulb:', style: TextStyle(fontSize: 18)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(

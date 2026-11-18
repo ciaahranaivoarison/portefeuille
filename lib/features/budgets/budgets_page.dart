@@ -45,9 +45,9 @@ class _BudgetsPageState extends State<BudgetsPage> {
 
   /// Couleur, message et emoji selon la part du budget déjà dépensée.
   (Color, String, String) _etat(Palette p, BudgetItem b) {
-    if (b.ratio > 1) return (p.depense, 'Dépassé', '🚨');
-    if (b.ratio >= 0.8) return (p.accent, 'Presque atteint', '⚠️');
-    return (p.revenu, 'Dans le budget', '✅');
+    if (b.ratio > 1) return (p.depense, 'Dépassé', ':alert-octagon:');
+    if (b.ratio >= 0.8) return (p.accent, 'Presque atteint', ':alert-triangle:');
+    return (p.revenu, 'Dans le budget', ':check-circle:');
   }
 
   Widget _chiffre(
@@ -148,7 +148,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
           children: [
             Row(
               children: [
-                const PastilleEmoji('🧮', taille: 40),
+                const PastilleEmoji(':calculator:', taille: 40),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -290,7 +290,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
             padding: const EdgeInsets.only(bottom: 24),
             children: [
               EnteteEcran(
-                emoji: '🎯',
+                emoji: ':target:',
                 titre: 'Budgets',
                 sousTitre: 'Une limite mensuelle par catégorie',
                 etiquette: n > 0 ? 'BUDGET MENSUEL TOTAL' : null,

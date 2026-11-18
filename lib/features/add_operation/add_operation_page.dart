@@ -197,7 +197,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
             children: [
               Expanded(
                 child: CarteChoix(
-                  emoji: '💵',
+                  emoji: ':banknote:',
                   libelle: 'Revenu',
                   actif: _type == 'income',
                   couleur: p.revenu,
@@ -207,7 +207,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
               const SizedBox(width: 10),
               Expanded(
                 child: CarteChoix(
-                  emoji: '💸',
+                  emoji: ':expense:',
                   libelle: 'Dépense',
                   actif: _type == 'expense',
                   couleur: p.depense,
@@ -217,7 +217,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
               const SizedBox(width: 10),
               Expanded(
                 child: CarteChoix(
-                  emoji: '🔁',
+                  emoji: ':transfer:',
                   libelle: 'Transfert',
                   actif: transfert,
                   couleur: p.principal,
@@ -337,7 +337,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
                 padding: const EdgeInsets.all(14),
                 child: Row(
                   children: [
-                    const PastilleEmoji('📅', taille: 40),
+                    const PastilleEmoji(':calendar:', taille: 40),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(

@@ -30,12 +30,12 @@ class _Choix {
 
 class _HistoryPageState extends State<HistoryPage> {
   static const _periodes = [
-    ('tout', '📅', 'Toutes les dates'),
-    ('jour', '☀️', "Aujourd'hui"),
-    ('semaine', '🗓️', 'Cette semaine'),
-    ('mois', '📆', 'Ce mois'),
-    ('precedent', '⏪', 'Mois précédent'),
-    ('perso', '🎛️', 'Personnalisée'),
+    ('tout', ':calendar:', 'Toutes les dates'),
+    ('jour', ':sun:', "Aujourd'hui"),
+    ('semaine', ':calendar-week:', 'Cette semaine'),
+    ('mois', ':calendar-month:', 'Ce mois'),
+    ('precedent', ':rewind:', 'Mois précédent'),
+    ('perso', ':sliders:', 'Personnalisée'),
   ];
 
   final _rechercheCtrl = TextEditingController();
@@ -330,7 +330,7 @@ class _HistoryPageState extends State<HistoryPage> {
         children: [
           Expanded(
             child: _PetiteStat(
-              emoji: '💵',
+              emoji: ':banknote:',
               valeur: '+ ${formatAr(revenus)}',
               couleur: p.revenu,
             ),
@@ -338,7 +338,7 @@ class _HistoryPageState extends State<HistoryPage> {
           const SizedBox(width: 10),
           Expanded(
             child: _PetiteStat(
-              emoji: '💸',
+              emoji: ':expense:',
               valeur: '- ${formatAr(depenses)}',
               couleur: p.depense,
             ),
@@ -377,7 +377,7 @@ class _HistoryPageState extends State<HistoryPage> {
     final titre = t.type == 'transfer'
         ? 'Transfert'
         : (t.categoryName ?? 'Sans catégorie');
-    final emoji = t.type == 'transfer' ? '🔁' : emojiCategorie(t.categoryName);
+    final emoji = t.type == 'transfer' ? ':transfer:' : emojiCategorie(t.categoryName);
     final compte = t.type == 'transfer'
         ? '${t.accountName} → ${t.toAccountName ?? ''}'
         : t.accountName;
@@ -437,7 +437,7 @@ class _HistoryPageState extends State<HistoryPage> {
   List<Widget> _construire(Palette p) {
     final elements = <Widget>[
       EnteteEcran(
-        emoji: '🧾',
+        emoji: ':receipt:',
         titre: 'Historique',
         sousTitre: _chargement
             ? 'Chargement…'
@@ -635,7 +635,7 @@ class _FiltresSheetState extends State<_FiltresSheet> {
             runSpacing: 8,
             children: [
               ChipChoix(
-                emoji: '🏷️',
+                emoji: ':tag:',
                 libelle: 'Tous',
                 actif: _compte == null,
                 onTap: () => setState(() => _compte = null),
@@ -655,7 +655,7 @@ class _FiltresSheetState extends State<_FiltresSheet> {
             runSpacing: 8,
             children: [
               ChipChoix(
-                emoji: '🏷️',
+                emoji: ':tag:',
                 libelle: 'Toutes',
                 actif: _categorie == null,
                 onTap: () => setState(() => _categorie = null),

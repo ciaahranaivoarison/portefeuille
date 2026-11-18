@@ -22,9 +22,9 @@ final Map<String, Map<String, String>> _caches = {};
 /// Textes qui ne contiennent aucune lettre à traduire (montants, dates...).
 final RegExp _sansLettres = RegExp(r'^[\d\s\u00A0+\-.,:%/·→()]*(Ar)?$');
 
-/// Début de texte formé d'un emoji : « 🍽️ Alimentation ».
+/// Début de texte formé d'un emoji : « :utensils: Alimentation ».
 final RegExp _debutEmoji = RegExp(
-  r'^([^\p{L}\p{N}\s]+)(\s+)(.+)$',
+  r'^((?::[a-z][a-z0-9-]*:)+)(\s+)(.+)$',
   unicode: true,
   dotAll: true,
 );
@@ -322,9 +322,9 @@ final List<(RegExp, String Function(Match, String))> _regles = [
     (m, l) => _t(
           l,
           'The emoji is chosen automatically from the name: “Tuition” gives '
-              '🎓, “Gift” gives 🎁. An unknown name gets 🏷️.',
-          'Ny emoji dia voafidy ho azy araka ny anarana: « Sekoly » dia 🎓, '
-              '« Fanomezana » dia 🎁. Ny anarana tsy fantatra dia 🏷️.',
+              ':graduation-cap:, “Gift” gives :gift:. An unknown name gets :tag:.',
+          'Ny emoji dia voafidy ho azy araka ny anarana: « Sekoly » dia :graduation-cap:, '
+              '« Fanomezana » dia :gift:. Ny anarana tsy fantatra dia :tag:.',
         ),
   ),
 ];

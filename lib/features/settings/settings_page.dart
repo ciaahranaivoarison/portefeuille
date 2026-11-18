@@ -71,13 +71,13 @@ class _SettingsPageState extends State<SettingsPage> {
             child: CarteRubriques(
               enfants: [
                 Rubrique(
-                  emoji: '🎨',
+                  emoji: ':palette:',
                   titre: 'Apparence',
                   sousTitre: _libelleMode,
                   onTap: () => _ouvrir(const ApparencePage()),
                 ),
                 Rubrique(
-                  emoji: '🌐',
+                  emoji: ':globe:',
                   titre: 'Langue',
                   sousTitre: Reglages.instance.nomLangue,
                   onTap: () => _ouvrir(const LanguePage()),
@@ -91,7 +91,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: CarteRubriques(
               enfants: [
                 Rubrique(
-                  emoji: '🛡️',
+                  emoji: ':shield-check:',
                   titre: 'Paramètres de sécurité',
                   sousTitre: _detailSecurite,
                   etiquette: _protection ? 'Activée' : null,
@@ -106,13 +106,13 @@ class _SettingsPageState extends State<SettingsPage> {
             child: CarteRubriques(
               enfants: [
                 Rubrique(
-                  emoji: '🏷️',
+                  emoji: ':tag:',
                   titre: 'Catégories',
                   sousTitre: 'Ajouter, modifier ou supprimer les vôtres',
                   onTap: () => _ouvrir(const CategoriesPage()),
                 ),
                 Rubrique(
-                  emoji: '💾',
+                  emoji: ':save:',
                   titre: 'Sauvegarde et restauration',
                   sousTitre: 'Sauvegarder vos données ou les restaurer',
                   onTap: () => _ouvrir(const BackupPage()),

@@ -139,7 +139,7 @@ class _AccountsPageState extends State<AccountsPage> {
             padding: const EdgeInsets.only(bottom: 24),
             children: [
               EnteteEcran(
-                emoji: '💳',
+                emoji: ':credit-card:',
                 titre: 'Comptes',
                 sousTitre: n > 1 ? '$n comptes' : '$n compte',
                 etiquette: 'TOTAL DE TOUS LES COMPTES',
