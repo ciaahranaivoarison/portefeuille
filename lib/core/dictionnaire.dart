@@ -521,6 +521,91 @@ final Map<String, (String, String)> dictionnaire = {
   ),
   'Cette action est irréversible.': ('This action cannot be undone.', 'Tsy azo averina ity hetsika ity.'),
   'Enregistrer la sauvegarde': ('Save the backup', 'Tehirizina ny tahiry'),
+  'Accès perdu ?': ('Lost access?', 'Tsy afaka miditra?'),
+  "Choisissez comment retrouver l'accès à votre application.": (
+    'Choose how to get back into your app.',
+    'Misafidiana ny fomba hiverenana ao amin’ny application.',
+  ),
+  "J'ai mon code de récupération": (
+    'I have my recovery code',
+    'Manana ny kaody famerenana aho',
+  ),
+  'Saisissez-le pour choisir un nouveau code. Vos données sont conservées.': (
+    'Enter it to choose a new code. Your data is kept.',
+    'Ampidiro izy mba hisafidianana kaody vaovao. Tehirizina ny angonao.',
+  ),
+  'Code de récupération': ('Recovery code', 'Kaody famerenana'),
+  'Vérifier et choisir un nouveau code': (
+    'Verify and choose a new code',
+    'Hamarino ary hisafidy kaody vaovao',
+  ),
+  'Le code contient 16 caractères.': (
+    'The code has 16 characters.',
+    'Ny kaody dia misy tarehintsoratra 16.',
+  ),
+  'Code de récupération incorrect.': (
+    'Wrong recovery code.',
+    'Diso ny kaody famerenana.',
+  ),
+  "Je n'ai plus mon code de récupération": (
+    'I no longer have my recovery code',
+    'Tsy manana ny kaody famerenana intsony aho',
+  ),
+  'La seule solution est de tout effacer et de repartir de zéro. Si vous avez une sauvegarde, vous pourrez la restaurer ensuite.': (
+    'The only solution is to erase everything and start over. If you have a backup, you can restore it afterwards.',
+    'Ny hany vahaolana dia ny mamafa ny zava-drehetra ary manomboka indray. Raha manana tahiry ianao, azonao averina aorian’izay.',
+  ),
+  "Réinitialiser l'application": ('Reset the app', 'Avereno ho vaovao ny application'),
+  'Tout effacer ?': ('Erase everything?', 'Fafana daholo ve?'),
+  'Tous vos comptes, opérations, budgets et catégories personnalisées seront supprimés définitivement. Cette action est irréversible.': (
+    'All your accounts, transactions, budgets and custom categories will be permanently deleted. This cannot be undone.',
+    'Ho voafafa tanteraka ny kaonty, hetsika, tetibola ary sokajy manokana rehetra. Tsy azo averina ity hetsika ity.',
+  ),
+  'Tapez SUPPRIMER pour confirmer :': (
+    'Type the word SUPPRIMER to confirm:',
+    'Soraty ny teny SUPPRIMER mba hanamafisana:',
+  ),
+  'Tout effacer:': ('Erase everything', 'Fafao daholo'),
+  'Application réinitialisée': ('App reset', 'Voavao ny application'),
+  'Vos données ont été effacées. Vous pouvez restaurer une sauvegarde depuis les paramètres.': (
+    'Your data has been erased. You can restore a backup from the settings.',
+    'Voafafa ny angonao. Azonao averina ny tahiry avy ao amin’ny fandrindrana.',
+  ),
+  'Pensez à faire une sauvegarde régulière : elle permet de tout restaurer après une réinitialisation.': (
+    'Remember to back up regularly: it lets you restore everything after a reset.',
+    'Tadidio ny manao fitehirizana tsy tapaka: ahafahana mamerina ny zava-drehetra aorian’ny famafana.',
+  ),
+  'La réinitialisation a échoué.': ('The reset failed.', 'Tsy nahomby ny famafana.'),
+  'Notez ce code maintenant': ('Write this code down now', 'Soraty ankehitriny ity kaody ity'),
+  "C'est la seule façon de retrouver l'accès si vous oubliez votre code, sans effacer vos données. Il ne sera plus jamais affiché.": (
+    'This is the only way to get back in if you forget your code, without erasing your data. It will never be shown again.',
+    'Ity ihany no fomba hiverenana raha adino ny kaodinao, tsy mamafa ny angonao. Tsy hasehoana intsony izy.',
+  ),
+  'Copier le code': ('Copy the code', 'Adikao ny kaody'),
+  'Code copié.': ('Code copied.', 'Voadika ny kaody.'),
+  'Écrivez-le sur papier et gardez-le hors du téléphone. Ne le partagez avec personne.': (
+    'Write it on paper and keep it away from the phone. Do not share it with anyone.',
+    'Soraty amin’ny taratasy ary tehirizo ivelan’ny findaina. Aza zarainao amin’ny olona.',
+  ),
+  "J'ai noté ce code en lieu sûr": (
+    'I wrote this code down somewhere safe',
+    'Efa nosoratako tany amin’ny toerana azo antoka ity kaody ity',
+  ),
+  'Terminer': ('Done', 'Vita'),
+  'Cochez la case pour confirmer que vous avez noté le code.': (
+    'Tick the box to confirm you have written the code down.',
+    'Fafao ny boaty mba hanamafisana fa efa nosoratanao ny kaody.',
+  ),
+  'Récupération': ('Recovery', 'Famerenana'),
+  'Créé': ('Created', 'Voaforona'),
+  'Non créé': ('Not created', 'Tsy mbola voaforona'),
+  "permet de retrouver l'accès si vous oubliez votre code": (
+    'lets you get back in if you forget your code',
+    'ahafahana miverina raha adino ny kaodinao',
+  ),
+  "recommandé en cas d'oubli": ('recommended in case you forget', 'tsara raha adino'),
+  'Code PIN oublié ?': ('Forgot your PIN code?', 'Hadino ny kaody PIN?'),
+  'Mot de passe oublié ?': ('Forgot your password?', 'Hadino ny teny miafina?'),
   'Posez votre doigt sur le capteur': (
     'Place your finger on the sensor',
     'Apetraho eo amin’ny sensor ny rantsan-tànanao',

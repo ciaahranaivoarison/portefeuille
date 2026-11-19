@@ -8,6 +8,8 @@ import '../../widgets/rubrique.dart';
 import '../../widgets/ui.dart';
 import '../lock/lock_screen.dart';
 import 'protection_setup_page.dart';
+import '../../core/recuperation_service.dart';
+import 'code_recuperation_page.dart';
 
 /// Rubrique « Paramètres de sécurité » : mot de passe, PIN et biométrie.
 class SecuritePage extends StatefulWidget {
@@ -55,6 +57,17 @@ class _SecuritePageState extends State<SecuritePage> {
     );
   }
 
+  /// Crée un nouveau code de récupération (l'ancien devient invalide)
+  /// et l'affiche une seule fois.
+  Future<void> _creerCodeRecuperation({bool confirmer = true}) async {
+    if (confirmer && !await _confirmerIdentite()) return;
+    final code = await RecuperationService.instance.generer();
+    if (!mounted) return;
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => CodeRecuperationPage(code: code)),
+    );
+    await _charger();
+  }
   /// Demande le code actuel avant une action sensible.
   Future<bool> _confirmerIdentite() async {
     final ok = await Navigator.of(context).push<bool>(
@@ -77,6 +90,7 @@ class _SecuritePageState extends State<SecuritePage> {
       );
       if (ok == true) {
         _message('Protection activée. Le code sera demandé au lancement.');
+        await _creerCodeRecuperation(confirmer: false);
       }
     } else {
       if (!await _confirmerIdentite()) return;
@@ -266,6 +280,35 @@ class _SecuritePageState extends State<SecuritePage> {
                         onChanged: (_active && _biometries.isNotEmpty)
                             ? _basculerBiometrie
                             : null,
+                      ),
+                    ],
+                  ),
+                ),
+                const TitreSection('Récupération'),
+                Apparition(
+                  index: 3,
+                  child: CarteRubriques(
+                    enfants: [
+                      FutureBuilder<bool>(
+                        future: RecuperationService.instance.existe(),
+                        builder: (context, snapshot) {
+                          final cree = snapshot.data == true;
+                          return Opacity(
+                            opacity: _active ? 1 : 0.45,
+                            child: IgnorePointer(
+                              ignoring: !_active,
+                              child: Rubrique(
+                                emoji: ':key:',
+                                titre: 'Code de récupération',
+                                sousTitre: cree
+                                    ? "Créé · permet de retrouver l'accès si vous oubliez votre code"
+                                    : "Non créé · recommandé en cas d'oubli",
+                                etiquette: cree ? 'Créé' : null,
+                                onTap: () => _creerCodeRecuperation(),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),

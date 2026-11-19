@@ -122,6 +122,19 @@ class AppDatabase {
     await batch.commit(noResult: true);
   }
 
+  /// Efface toutes les données (comptes, opérations, budgets, catégories)
+  /// et recrée les comptes et catégories de la fiche. Les réglages
+  /// (apparence, langue) sont conservés.
+  Future<void> reinitialiser() async {
+    final db = await database;
+    await db.transaction((txn) async {
+      for (final table in ['transactions', 'budgets', 'categories', 'accounts']) {
+        await txn.delete(table);
+      }
+      await txn.delete('sqlite_sequence');
+    });
+    await _remplirParDefaut(db);
+  }
   /// Petit contrôle provisoire, affiché sur l'écran d'accueil.
   Future<String> resume() async {
     final db = await database;

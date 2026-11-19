@@ -9,6 +9,7 @@ import '../../core/empreinte_native.dart';
 import '../../core/security_service.dart';
 import '../../widgets/couleur_securite.dart';
 import '../../widgets/pave_numerique.dart';
+import 'lien_oublie.dart';
 
 /// Écran de verrouillage : demande le code PIN ou le mot de passe, et lit
 /// l'empreinte digitale automatiquement si la biométrie est activée.
@@ -508,8 +509,8 @@ class _LockScreenState extends State<LockScreen> with WidgetsBindingObserver {
                                 child: _panneau(c, pin, message),
                               ),
                               const SizedBox(height: 22),
-                              if (_biometrie)
-                                Center(child: _blocBiometrie(c, pin)),
+                              if (!widget.annulable) LienOublie(pin: pin, onRecupere: widget.onUnlocked),
+                              if (_biometrie) Center(child: _blocBiometrie(c, pin)),
                               const Spacer(),
                               Padding(
                                 padding:
