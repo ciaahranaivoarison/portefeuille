@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../core/app_theme.dart';
+import 'pictogrammes_extra.dart';
 
 /// Un dessin SVG : son code, son rapport largeur/hauteur, et s'il garde
 /// ses propres couleurs (drapeaux) ou prend celle du thème (icônes).
@@ -34,6 +35,7 @@ _Dessin _drapeau(String contenu) => _Dessin(
 /// Toutes les icônes de l'application, par nom (utilisées sous la forme
 /// `:nom:` dans les textes).
 final Map<String, _Dessin> _dessins = {
+  ...iconesSupplementaires.map((k, v) => MapEntry(k, _t(v))),
   // Catégories de dépenses
   'utensils': _t(
     '<path d="M6 3v6a2.5 2.5 0 0 0 5 0V3"/><path d="M8.5 3v18"/>'
@@ -259,10 +261,15 @@ final Map<String, _Dessin> _dessins = {
 final RegExp _jeton = RegExp(r':([a-z][a-z0-9-]*):');
 final RegExp _jetonSeul = RegExp(r'^\s*:([a-z][a-z0-9-]*):\s*$');
 
+/// Une icône est connue si elle a un dessin, ou si c'est un badge à
+/// initiale (`:lettre-z:`).
+bool _connu(String? nom) =>
+    nom != null && (_dessins.containsKey(nom) || nom.startsWith('lettre-'));
+
 /// Vrai si le texte contient au moins un code d'icône connu (`:nom:`).
 bool contientPictogramme(String texte) {
   for (final m in _jeton.allMatches(texte)) {
-    if (_dessins.containsKey(m.group(1))) return true;
+    if (_connu(m.group(1))) return true;
   }
   return false;
 }
@@ -270,7 +277,7 @@ bool contientPictogramme(String texte) {
 /// Nom de l'icône si le texte ne contient que ce code, sinon null.
 String? nomPictogrammeSeul(String texte) {
   final nom = _jetonSeul.firstMatch(texte)?.group(1);
-  return (nom != null && _dessins.containsKey(nom)) ? nom : null;
+  return (nom != null && _connu(nom)) ? nom : null;
 }
 
 /// Découpe un texte en morceaux de texte et en icônes.
@@ -283,7 +290,7 @@ List<InlineSpan> decouperPictogrammes(
   var debut = 0;
   for (final m in _jeton.allMatches(texte)) {
     final nom = m.group(1)!;
-    if (!_dessins.containsKey(nom)) continue;
+    if (!_connu(nom)) continue;
     if (m.start > debut) {
       morceaux.add(TextSpan(text: texte.substring(debut, m.start)));
     }
@@ -313,6 +320,28 @@ class Pictogramme extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+        if (nom.startsWith('lettre-')) {
+      final lettre = nom.substring(7).toUpperCase();
+      final teinte = couleur ?? context.pal.principal;
+      return Container(
+        width: taille,
+        height: taille,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: teinte, width: taille * 0.07),
+        ),
+        child: Text(
+          lettre,
+          style: TextStyle(
+            fontSize: taille * 0.55,
+            fontWeight: FontWeight.w700,
+            color: teinte,
+            height: 1,
+          ),
+        ),
+      );
+    }
     final dessin = _dessins[nom];
     if (dessin == null) return SizedBox(width: taille, height: taille);
     return SvgPicture.string(

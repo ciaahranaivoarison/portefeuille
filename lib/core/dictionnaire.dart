@@ -521,6 +521,10 @@ final Map<String, (String, String)> dictionnaire = {
   ),
   'Cette action est irréversible.': ('This action cannot be undone.', 'Tsy azo averina ity hetsika ity.'),
   'Enregistrer la sauvegarde': ('Save the backup', 'Tehirizina ny tahiry'),
+  "Une icône est associée automatiquement au nom de la catégorie. Si le nom n'est pas reconnu, son initiale est utilisée.": (
+    "An icon is matched automatically to the category name. If the name isn't recognized, its first letter is used.",
+    'Misy sary mifanaraka ho azy amin’ny anaran’ny sokajy. Raha tsy fantatra ny anarana, ny litera voalohany no ampiasaina.',
+  ),
   'Accès perdu ?': ('Lost access?', 'Tsy afaka miditra?'),
   "Choisissez comment retrouver l'accès à votre application.": (
     'Choose how to get back into your app.',

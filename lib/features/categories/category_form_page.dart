@@ -140,7 +140,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    "Un emoji est associé automatiquement au nom de la catégorie.",
+                    "Une icône est associée automatiquement au nom de la catégorie. Si le nom n'est pas reconnu, son initiale est utilisée.",
                     style: TextStyle(fontSize: 12.5, color: p.texteDoux),
                   ),
                 ),
