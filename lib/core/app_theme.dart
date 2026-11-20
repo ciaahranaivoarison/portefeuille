@@ -68,7 +68,7 @@ class Palette extends ThemeExtension<Palette> {
   /// Mode sombre : des bruns chauds de chocolat, jamais de noir.
   static const sombre = Palette(
     fond: Color(0xFF2B2019),
-    surface: Color(0xFF382B23),
+     surface: Color(0xFF382B23),
     surfaceDouce: Color(0xFF42342A),
     texte: Color(0xFFF5ECDD),
     texteDoux: Color(0xFFCDB89E),
