@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart' hide Text;
-import 'package:gestion_argent/widgets/texte.dart';
 import 'package:flutter/services.dart';
+import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/emojis.dart';
 import '../../core/formats.dart';
+import '../../data/categories.dart';
 import '../../data/operations.dart';
 import '../../data/repository.dart';
 import '../../widgets/choix.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/tuile_categorie.dart';
 import '../../widgets/ui.dart';
+import '../categories/category_form_page.dart';
 
 class AddOperationPage extends StatefulWidget {
   const AddOperationPage({super.key, this.transaction});
@@ -24,7 +27,7 @@ class AddOperationPage extends StatefulWidget {
 class _AddOperationPageState extends State<AddOperationPage> {
   String _type = 'income'; // 'income', 'expense' ou 'transfer'
   List<AccountBalance> _comptes = [];
-  List<Category> _categories = [];
+  List<CategoryInfo> _categories = [];
   int? _compteId;
   int? _versCompteId;
   int? _categorieId;
@@ -75,7 +78,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
       setState(() => _categories = []);
       return;
     }
-    final categories = await Operations.instance.categories(_type);
+    final categories = await Categories.instance.lister(_type);
     if (!mounted) return;
     setState(() {
       _categories = categories;
@@ -91,6 +94,22 @@ class _AddOperationPageState extends State<AddOperationPage> {
       _versCompteId = null;
     });
     _chargerCategories();
+  }
+
+  /// Ouvre le formulaire de catégorie, puis sélectionne la nouvelle.
+  Future<void> _nouvelleCategorie() async {
+    final avant = _categories.map((c) => c.id).toSet();
+    final cree = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => CategoryFormPage(type: _type)),
+    );
+    if (cree != true || !mounted) return;
+    final categories = await Categories.instance.lister(_type);
+    if (!mounted) return;
+    final nouvelles = categories.where((c) => !avant.contains(c.id)).toList();
+    setState(() {
+      _categories = categories;
+      if (nouvelles.isNotEmpty) _categorieId = nouvelles.last.id;
+    });
   }
 
   Future<void> _choisirDate() async {
@@ -169,6 +188,35 @@ class _AddOperationPageState extends State<AddOperationPage> {
         'expense' => p.depense,
         _ => p.principal,
       };
+
+  /// Grille des catégories : mêmes tuiles que dans Paramètres, Catégories.
+  Widget _grilleCategories() {
+    return LayoutBuilder(
+      builder: (context, contraintes) {
+        final largeur = (contraintes.maxWidth - 12) / 2;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (final c in _categories)
+              TuileCategorie(
+                info: c,
+                largeur: largeur,
+                selectionnee: _categorieId == c.id,
+                onTap: () => setState(() => _categorieId = c.id),
+              ),
+            SizedBox(
+              width: contraintes.maxWidth,
+              child: CarteAjout(
+                libelle: 'Nouvelle catégorie',
+                onTap: _nouvelleCategorie,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -255,8 +303,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
                       fontWeight: FontWeight.w600,
                       color: couleur,
                     ),
-                    decoration: InputDecoration(
-                      hintText: tr('0'),
+                    decoration: const InputDecoration(
+                      hintText: '0',
                       filled: false,
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
@@ -315,19 +363,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
             ),
           ] else ...[
             const TitreSection('Catégorie'),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final c in _categories)
-                  ChipChoix(
-                    emoji: emojiCategorie(c.name),
-                    libelle: c.name,
-                    actif: _categorieId == c.id,
-                    onTap: () => setState(() => _categorieId = c.id),
-                  ),
-              ],
-            ),
+            _grilleCategories(),
           ],
           const TitreSection('Date'),
           Card(
@@ -360,7 +396,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
             textCapitalization: TextCapitalization.sentences,
             decoration: InputDecoration(
               hintText: tr('Écrivez ici'),
-              prefixIcon: Icon(Icons.edit_note_rounded),
+              prefixIcon: const Icon(Icons.edit_note_rounded),
             ),
           ),
           const SizedBox(height: 28),
