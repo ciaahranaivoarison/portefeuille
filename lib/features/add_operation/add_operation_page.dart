@@ -13,6 +13,7 @@ import '../../widgets/confirm_dialog.dart';
 import '../../widgets/tuile_categorie.dart';
 import '../../widgets/ui.dart';
 import '../categories/category_form_page.dart';
+import '../categories/options_categorie.dart';
 
 class AddOperationPage extends StatefulWidget {
   const AddOperationPage({super.key, this.transaction});
@@ -112,6 +113,27 @@ class _AddOperationPageState extends State<AddOperationPage> {
     });
   }
 
+  /// Options d'une catégorie : choisir, voir, modifier ou supprimer.
+  Future<void> _ouvrirCategorie(CategoryInfo c) async {
+    final resultat = await gererCategorie(context, c, avecChoix: true);
+    if (!mounted || resultat == null) return;
+
+    if (resultat == ResultatCategorie.choisie) {
+      setState(() => _categorieId = c.id);
+      return;
+    }
+
+    // Modifiée ou supprimée : on recharge la liste.
+    final categories = await Categories.instance.lister(_type);
+    if (!mounted) return;
+    setState(() {
+      _categories = categories;
+      if (resultat == ResultatCategorie.supprimee && _categorieId == c.id) {
+        _categorieId = null;
+      }
+    });
+  }
+
   Future<void> _choisirDate() async {
     final choisie = await showDatePicker(
       context: context,
@@ -189,6 +211,23 @@ class _AddOperationPageState extends State<AddOperationPage> {
         _ => p.principal,
       };
 
+  /// Titre « Catégorie » avec une simple icône « + » à droite.
+  Widget _titreCategorie() {
+    return Row(
+      children: [
+        const Expanded(child: TitreSection('Catégorie')),
+        Padding(
+          padding: const EdgeInsets.only(top: 14),
+          child: IconButton(
+            tooltip: tr('Nouvelle catégorie'),
+            icon: const Icon(Icons.add_rounded),
+            onPressed: _nouvelleCategorie,
+          ),
+        ),
+      ],
+    );
+  }
+
   /// Grille des catégories : mêmes tuiles que dans Paramètres, Catégories.
   Widget _grilleCategories() {
     return LayoutBuilder(
@@ -203,15 +242,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
                 info: c,
                 largeur: largeur,
                 selectionnee: _categorieId == c.id,
-                onTap: () => setState(() => _categorieId = c.id),
+                onTap: () => _ouvrirCategorie(c),
               ),
-            SizedBox(
-              width: contraintes.maxWidth,
-              child: CarteAjout(
-                libelle: 'Nouvelle catégorie',
-                onTap: _nouvelleCategorie,
-              ),
-            ),
           ],
         );
       },
@@ -362,7 +394,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
               ],
             ),
           ] else ...[
-            const TitreSection('Catégorie'),
+            _titreCategorie(),
             _grilleCategories(),
           ],
           const TitreSection('Date'),

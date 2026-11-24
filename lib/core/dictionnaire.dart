@@ -521,6 +521,23 @@ final Map<String, (String, String)> dictionnaire = {
   ),
   'Cette action est irréversible.': ('This action cannot be undone.', 'Tsy azo averina ity hetsika ity.'),
   'Enregistrer la sauvegarde': ('Save the backup', 'Tehirizina ny tahiry'),
+  'Choisir cette catégorie': ('Choose this category', 'Fidio ity sokajy ity'),
+  'Voir les opérations': ('View transactions', 'Hijery ny hetsika'),
+  'Modifier le nom': ('Rename', 'Hanova ny anarana'),
+  'Total': ('Total', 'Totaliny'),
+  'Aucune opération dans cette catégorie.': (
+    'No transactions in this category.',
+    'Tsy misy hetsika amin’ity sokajy ity.',
+  ),
+  'Catégorie par défaut : elle ne peut être ni modifiée ni supprimée.': (
+    'Default category: it cannot be edited or deleted.',
+    'Sokajy mahazatra: tsy azo ovaina na fafana.',
+  ),
+  'Catégorie supprimée.': ('Category deleted.', 'Voafafa ny sokajy.'),
+  'Touchez une catégorie pour voir ses opérations, la modifier ou la supprimer. Les catégories par défaut sont verrouillées.': (
+    'Tap a category to see its transactions, edit it or delete it. Default categories are locked.',
+    'Tsindrio ny sokajy iray mba hijerena ny hetsika, hanovana na hamafana azy. Voahidy ny sokajy mahazatra.',
+  ),
   "Une icône est associée automatiquement au nom de la catégorie. Si le nom n'est pas reconnu, son initiale est utilisée.": (
     "An icon is matched automatically to the category name. If the name isn't recognized, its first letter is used.",
     'Misy sary mifanaraka ho azy amin’ny anaran’ny sokajy. Raha tsy fantatra ny anarana, ny litera voalohany no ampiasaina.',

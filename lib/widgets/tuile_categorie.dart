@@ -6,27 +6,31 @@ import '../core/emojis.dart';
 import '../data/categories.dart';
 import 'ui.dart';
 
-/// Tuile de catégorie, comme dans Paramètres, Catégories : icône, nom et
-/// mention « Par défaut » ou « Personnalisée ». Utilisée pour choisir la
-/// catégorie d'une opération (contour brun et coche quand elle est choisie).
+/// Tuile de catégorie, identique dans Paramètres, Catégories et dans
+/// Nouvelle opération : icône, nom, nombre d'opérations et mention
+/// « Par défaut » ou « Personnalisée ». Quand elle est [selectionnee], elle
+/// prend un contour brun et une coche.
 class TuileCategorie extends StatelessWidget {
   const TuileCategorie({
     super.key,
     required this.info,
     required this.largeur,
-    required this.selectionnee,
     required this.onTap,
+    this.selectionnee = false,
   });
 
   final CategoryInfo info;
   final double largeur;
-  final bool selectionnee;
   final VoidCallback onTap;
+  final bool selectionnee;
 
   @override
   Widget build(BuildContext context) {
     final p = context.pal;
     const duree = Duration(milliseconds: 220);
+    final operations = info.usage > 1
+        ? '${info.usage} opérations'
+        : '${info.usage} opération';
 
     return SizedBox(
       width: largeur,
@@ -35,7 +39,7 @@ class TuileCategorie extends StatelessWidget {
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
           color: selectionnee
-              ? p.principal.withValues(alpha: 0.10)
+              ? Color.alphaBlend(p.principal.withValues(alpha: 0.10), p.surface)
               : p.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
@@ -49,48 +53,59 @@ class TuileCategorie extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
-              child: Row(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  PastilleEmoji(emojiCategorie(info.name), taille: 42),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          info.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14.5,
-                            color: p.texte,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          info.isDefault ? 'Par défaut' : 'Personnalisée',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: p.accent,
-                          ),
-                        ),
-                      ],
+                  Row(
+                    children: [
+                      PastilleEmoji(emojiCategorie(info.name), taille: 44),
+                      const Spacer(),
+                      AnimatedSwitcher(
+                        duration: duree,
+                        child: selectionnee
+                            ? Icon(
+                                Icons.check_circle_rounded,
+                                key: const ValueKey<String>('choisie'),
+                                size: 22,
+                                color: p.principal,
+                              )
+                            : Icon(
+                                info.isDefault
+                                    ? Icons.lock_outline_rounded
+                                    : Icons.edit_outlined,
+                                key: const ValueKey<String>('etat'),
+                                size: 18,
+                                color: p.texteDoux,
+                              ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    info.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: p.texte,
                     ),
                   ),
-                  AnimatedSwitcher(
-                    duration: duree,
-                    child: selectionnee
-                        ? Icon(
-                            Icons.check_circle_rounded,
-                            key: const ValueKey<bool>(true),
-                            color: p.principal,
-                            size: 22,
-                          )
-                        : const SizedBox(key: ValueKey<bool>(false), width: 22),
+                  const SizedBox(height: 3),
+                  Text(
+                    operations,
+                    style: TextStyle(fontSize: 12, color: p.texteDoux),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    info.isDefault ? 'Par défaut' : 'Personnalisée',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: p.accent,
+                    ),
                   ),
                 ],
               ),

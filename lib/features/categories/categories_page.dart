@@ -2,10 +2,11 @@ import 'package:flutter/material.dart' hide Text;
 import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
-import '../../core/emojis.dart';
 import '../../data/categories.dart';
+import '../../widgets/tuile_categorie.dart';
 import '../../widgets/ui.dart';
 import 'category_form_page.dart';
+import 'options_categorie.dart';
 
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});
@@ -31,90 +32,22 @@ class _CategoriesPageState extends State<CategoriesPage> {
     });
   }
 
-  Future<void> _ouvrir({CategoryInfo? categorie}) async {
+  Future<void> _nouvelle() async {
     final change = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => CategoryFormPage(type: _type, categorie: categorie),
-      ),
+      MaterialPageRoute(builder: (_) => CategoryFormPage(type: _type)),
     );
     if (change == true) _rafraichir();
   }
 
-  Widget _tuile(BuildContext context, CategoryInfo c, double largeur, int i) {
-    final p = context.pal;
-    final operations =
-        c.usage > 1 ? '${c.usage} opérations' : '${c.usage} opération';
-
-    return Apparition(
-      key: ValueKey('categorie${c.id}'),
-      index: i,
-      child: SizedBox(
-        width: largeur,
-        child: Card(
-          child: InkWell(
-            onTap: () {
-              if (c.isDefault) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Les catégories par défaut ne peuvent pas être '
-                      'modifiées.',
-                    ),
-                  ),
-                );
-              } else {
-                _ouvrir(categorie: c);
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      PastilleEmoji(emojiCategorie(c.name), taille: 44),
-                      const Spacer(),
-                      Icon(
-                        c.isDefault
-                            ? Icons.lock_outline_rounded
-                            : Icons.edit_outlined,
-                        size: 18,
-                        color: p.texteDoux,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    c.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    operations,
-                    style: TextStyle(fontSize: 12, color: p.texteDoux),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    c.isDefault ? 'Par défaut' : 'Personnalisée',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: p.accent,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  Future<void> _ouvrirOptions(CategoryInfo c) async {
+    final resultat = await gererCategorie(context, c);
+    if (!mounted || resultat == null) return;
+    _rafraichir();
+    if (resultat == ResultatCategorie.supprimee) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Catégorie supprimée.')),
+      );
+    }
   }
 
   @override
@@ -127,7 +60,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
           IconButton(
             tooltip: tr('Nouvelle catégorie'),
             icon: const Icon(Icons.add_rounded),
-            onPressed: () => _ouvrir(),
+            onPressed: _nouvelle,
           ),
         ],
       ),
@@ -147,8 +80,14 @@ class _CategoriesPageState extends State<CategoriesPage> {
             children: [
               SegmentedButton<String>(
                 segments: const [
-                  ButtonSegment(value: 'expense', label: Text(':expense: Dépenses')),
-                  ButtonSegment(value: 'income', label: Text(':banknote: Revenus')),
+                  ButtonSegment(
+                    value: 'expense',
+                    label: Text(':expense: Dépenses'),
+                  ),
+                  ButtonSegment(
+                    value: 'income',
+                    label: Text(':banknote: Revenus'),
+                  ),
                 ],
                 selected: {_type},
                 showSelectedIcon: false,
@@ -164,13 +103,13 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(':lightbulb:', style: TextStyle(fontSize: 18)),
+                    Icon(Icons.touch_app_outlined, size: 20, color: p.accent),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Les catégories par défaut sont verrouillées. '
-                        'Ajoutez les vôtres, puis modifiez-les ou '
-                        'supprimez-les.',
+                        'Touchez une catégorie pour voir ses opérations, '
+                        'la modifier ou la supprimer. Les catégories par '
+                        'défaut sont verrouillées.',
                         style: TextStyle(fontSize: 12.5, color: p.texteDoux),
                       ),
                     ),
@@ -186,7 +125,15 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     runSpacing: 12,
                     children: [
                       for (var i = 0; i < categories.length; i++)
-                        _tuile(context, categories[i], largeur, i),
+                        Apparition(
+                          key: ValueKey('categorie${categories[i].id}'),
+                          index: i,
+                          child: TuileCategorie(
+                            info: categories[i],
+                            largeur: largeur,
+                            onTap: () => _ouvrirOptions(categories[i]),
+                          ),
+                        ),
                     ],
                   );
                 },
