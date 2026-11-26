@@ -6,7 +6,6 @@ import '../../core/security_service.dart';
 import '../../widgets/rubrique.dart';
 import '../../widgets/texte.dart';
 import '../../widgets/ui.dart';
-import '../categories/categories_page.dart';
 import 'apparence_page.dart';
 import 'backup_page.dart';
 import 'langue_page.dart';
@@ -105,12 +104,6 @@ class _SettingsPageState extends State<SettingsPage> {
             index: 2,
             child: CarteRubriques(
               enfants: [
-                Rubrique(
-                  emoji: ':tag:',
-                  titre: 'Catégories',
-                  sousTitre: 'Ajouter, modifier ou supprimer les vôtres',
-                  onTap: () => _ouvrir(const CategoriesPage()),
-                ),
                 Rubrique(
                   emoji: ':save:',
                   titre: 'Sauvegarde et restauration',
