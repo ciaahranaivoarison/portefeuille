@@ -68,7 +68,7 @@ class Palette extends ThemeExtension<Palette> {
   /// Mode sombre : des bruns chauds de chocolat, jamais de noir.
   static const sombre = Palette(
     fond: Color(0xFF2B2019),
-     surface: Color(0xFF382B23),
+    surface: Color(0xFF382B23),
     surfaceDouce: Color(0xFF42342A),
     texte: Color(0xFFF5ECDD),
     texteDoux: Color(0xFFCDB89E),
@@ -141,13 +141,13 @@ class AppTheme {
     );
 
     final bordureChamp = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(16),
       borderSide: BorderSide(color: p.bordure),
     );
     final formeBouton = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(18),
     );
-    const texteBouton = TextStyle(fontWeight: FontWeight.w700, fontSize: 15);
+    const texteBouton = TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5);
 
     return ThemeData(
       useMaterial3: true,
@@ -156,9 +156,12 @@ class AppTheme {
       extensions: <ThemeExtension<dynamic>>[p],
       scaffoldBackgroundColor: p.fond,
       canvasColor: p.fond,
+      splashColor: p.principal.withValues(alpha: 0.08),
+      highlightColor: p.principal.withValues(alpha: 0.05),
       appBarTheme: AppBarTheme(
         backgroundColor: p.fond,
         foregroundColor: p.texte,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
@@ -171,11 +174,13 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: p.surface,
-        elevation: 0,
+        elevation: 1.5,
+        shadowColor: p.principal.withValues(alpha: 0.16),
+        surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(22),
           side: BorderSide(color: p.bordure),
         ),
       ),
@@ -188,14 +193,14 @@ class AppTheme {
         filled: true,
         fillColor: p.surface,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+          horizontal: 18,
+          vertical: 15,
         ),
         border: bordureChamp,
         enabledBorder: bordureChamp,
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: p.principal, width: 1.6),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: p.principal, width: 1.8),
         ),
         hintStyle: TextStyle(color: p.texteDoux.withValues(alpha: 0.6)),
         labelStyle: TextStyle(color: p.texteDoux),
@@ -210,7 +215,8 @@ class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: p.principal,
           foregroundColor: p.surPrincipal,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          minimumSize: const Size(0, 54),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 22),
           shape: formeBouton,
           textStyle: texteBouton,
         ),
@@ -219,7 +225,8 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: p.principal,
           side: BorderSide(color: p.principal.withValues(alpha: 0.5)),
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+          minimumSize: const Size(0, 52),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 22),
           shape: formeBouton,
           textStyle: texteBouton,
         ),
@@ -235,7 +242,7 @@ class AppTheme {
         foregroundColor: p.surPrincipal,
         elevation: 3,
         extendedTextStyle: texteBouton,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: p.principal,
@@ -245,14 +252,15 @@ class AppTheme {
           fontFamily: fontTexte,
           fontSize: 14,
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: p.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         titleTextStyle: TextStyle(
           fontFamily: fontTitre,
-          fontSize: 20,
+          fontSize: 21,
           fontWeight: FontWeight.w600,
           color: p.texte,
         ),
@@ -264,10 +272,11 @@ class AppTheme {
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: p.surface,
+        surfaceTintColor: Colors.transparent,
         showDragHandle: true,
         dragHandleColor: p.bordure,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         ),
       ),
       chipTheme: ChipThemeData(

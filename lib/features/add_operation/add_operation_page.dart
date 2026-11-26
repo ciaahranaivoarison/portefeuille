@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart' hide Text;
 import 'package:flutter/services.dart';
 import 'package:gestion_argent/widgets/texte.dart';
@@ -37,6 +39,22 @@ class _AddOperationPageState extends State<AddOperationPage> {
   final _noteCtrl = TextEditingController();
 
   bool get _modification => widget.transaction != null;
+
+  /// Compte choisi (compte débité ou crédité, ou compte de départ).
+  AccountBalance? get _compteChoisi {
+    for (final c in _comptes) {
+      if (c.id == _compteId) return c;
+    }
+    return null;
+  }
+
+  /// Compte d'arrivée d'un transfert.
+  AccountBalance? get _compteArrivee {
+    for (final c in _comptes) {
+      if (c.id == _versCompteId) return c;
+    }
+    return null;
+  }
 
   /// Catégorie actuellement choisie (null si aucune).
   CategoryInfo? get _categorieChoisie {
@@ -104,6 +122,16 @@ class _AddOperationPageState extends State<AddOperationPage> {
     _chargerCategories();
   }
 
+  /// Inverse le compte de départ et le compte d'arrivée.
+  void _echanger() {
+    if (_compteId == null || _versCompteId == null) return;
+    setState(() {
+      final depart = _compteId;
+      _compteId = _versCompteId;
+      _versCompteId = depart;
+    });
+  }
+
   /// Ouvre la feuille de choix : recherche, sélection, puis « OK ».
   Future<void> _choisirCategorie() async {
     final choisie = await choisirCategorie(
@@ -144,6 +172,12 @@ class _AddOperationPageState extends State<AddOperationPage> {
     if (_compteId == null) {
       messenger.showSnackBar(
         const SnackBar(content: Text('Choisissez un compte.')),
+      );
+      return;
+    }
+    if (_type == 'transfer' && _versCompteId == null) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Choisissez le compte d'arrivée.")),
       );
       return;
     }
@@ -197,6 +231,160 @@ class _AddOperationPageState extends State<AddOperationPage> {
         'expense' => p.depense,
         _ => p.principal,
       };
+
+  // ─────────────────────────── Comptes ───────────────────────────
+
+  /// Section des comptes : cartes à faire défiler (revenu ou dépense) ou
+  /// panneau « de... vers... » (transfert).
+  Widget _sectionComptes() {
+    if (_type == 'transfer') return _panneauTransfert();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TitreSection(
+          _type == 'income' ? 'Compte à créditer' : 'Compte à débiter',
+        ),
+        _RangeeComptes(
+          comptes: _comptes,
+          selection: _compteId,
+          debordement: true,
+          onChoisir: (id) => setState(() => _compteId = id),
+        ),
+        const SizedBox(height: 12),
+        _resumeSolde(),
+      ],
+    );
+  }
+
+  /// Solde du compte choisi, avant et après l'opération.
+  Widget _resumeSolde() {
+    final compte = _compteChoisi;
+    if (compte == null) return const SizedBox.shrink();
+
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: _montantCtrl,
+      builder: (context, valeur, _) {
+        final n = int.tryParse(valeur.text) ?? 0;
+        final apres =
+            _type == 'income' ? compte.balance + n : compte.balance - n;
+        return _BandeauSolde(
+          libelle: n > 0 ? 'Solde après opération' : 'Solde actuel',
+          montant: n > 0 ? apres : compte.balance,
+          alerte: n > 0 && apres < 0,
+        );
+      },
+    );
+  }
+
+  Widget _panneauTransfert() {
+    final p = context.pal;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const TitreSection('Transfert'),
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: p.surface,
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: p.bordure),
+            boxShadow: [
+              BoxShadow(
+                color: p.principal.withValues(alpha: 0.12),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Column(
+              children: [
+                const _EtiquettePanneau(
+                  icone: Icons.north_east_rounded,
+                  libelle: 'Compte de départ',
+                ),
+                const SizedBox(height: 10),
+                _RangeeComptes(
+                  comptes: _comptes,
+                  selection: _compteId,
+                  desactive: _versCompteId,
+                  margeH: 14,
+                  onChoisir: (id) => setState(() => _compteId = id),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    children: [
+                      Expanded(child: Divider(color: p.bordure)),
+                      const SizedBox(width: 10),
+                      _BoutonEchange(onTap: _echanger),
+                      const SizedBox(width: 10),
+                      Expanded(child: Divider(color: p.bordure)),
+                    ],
+                  ),
+                ),
+                const _EtiquettePanneau(
+                  icone: Icons.south_west_rounded,
+                  libelle: "Compte d'arrivée",
+                ),
+                const SizedBox(height: 10),
+                _RangeeComptes(
+                  comptes: _comptes,
+                  selection: _versCompteId,
+                  desactive: _compteId,
+                  margeH: 14,
+                  onChoisir: (id) => setState(() => _versCompteId = id),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _resumeTransfert(),
+      ],
+    );
+  }
+
+  /// Soldes des deux comptes avant et après le transfert.
+  Widget _resumeTransfert() {
+    final depart = _compteChoisi;
+    final arrivee = _compteArrivee;
+    if (depart == null || arrivee == null) return const SizedBox.shrink();
+    final p = context.pal;
+
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: _montantCtrl,
+      builder: (context, valeur, _) {
+        final n = int.tryParse(valeur.text) ?? 0;
+        return Container(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          decoration: BoxDecoration(
+            color: p.surfaceDouce,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
+            children: [
+              _LigneTransfert(
+                nom: depart.name,
+                avant: depart.balance,
+                apres: n > 0 ? depart.balance - n : null,
+              ),
+              Divider(height: 20, color: p.bordure),
+              _LigneTransfert(
+                nom: arrivee.name,
+                avant: arrivee.balance,
+                apres: n > 0 ? arrivee.balance + n : null,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ───────────────────────── Catégorie ─────────────────────────
 
   /// Le mot « Catégorie » avec son bouton « + », puis la catégorie choisie.
   Widget _sectionCategorie() {
@@ -328,44 +516,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
               ),
             ),
           ),
-          TitreSection(transfert ? 'Compte de départ' : 'Compte'),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final c in _comptes)
-                ChipChoix(
-                  emoji: emojiCompte(c.type),
-                  libelle: c.name,
-                  actif: _compteId == c.id,
-                  onTap: () => setState(() => _compteId = c.id),
-                ),
-            ],
-          ),
-          if (transfert) ...[
-            const SizedBox(height: 14),
-            Center(
-              child: Icon(
-                Icons.arrow_downward_rounded,
-                color: p.texteDoux,
-              ),
-            ),
-            const TitreSection("Compte d'arrivée"),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final c in _comptes)
-                  ChipChoix(
-                    emoji: emojiCompte(c.type),
-                    libelle: c.name,
-                    actif: _versCompteId == c.id,
-                    onTap: () => setState(() => _versCompteId = c.id),
-                  ),
-              ],
-            ),
-          ] else
-            _sectionCategorie(),
+          _sectionComptes(),
+          if (!transfert) _sectionCategorie(),
           const TitreSection('Date'),
           Card(
             child: InkWell(
@@ -412,6 +564,422 @@ class _AddOperationPageState extends State<AddOperationPage> {
     );
   }
 }
+
+// ═══════════════════════ Éléments de la section Comptes ═══════════════════════
+
+/// Cartes de comptes à faire défiler, en une seule ligne.
+class _RangeeComptes extends StatefulWidget {
+  const _RangeeComptes({
+    required this.comptes,
+    required this.selection,
+    required this.onChoisir,
+    this.desactive,
+    this.debordement = false,
+    this.margeH = 0,
+  });
+
+  final List<AccountBalance> comptes;
+  final int? selection;
+
+  /// Compte grisé et non touchable (déjà pris de l'autre côté du transfert).
+  final int? desactive;
+
+  /// Si vrai, les cartes dépassent des marges de la page en défilant.
+  final bool debordement;
+  final double margeH;
+  final ValueChanged<int> onChoisir;
+
+  @override
+  State<_RangeeComptes> createState() => _RangeeComptesState();
+}
+
+class _RangeeComptesState extends State<_RangeeComptes> {
+  static const _largeur = 156.0;
+  static const _ecart = 10.0;
+
+  final _ctrl = ScrollController();
+  bool _positionne = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _planifier();
+  }
+
+  @override
+  void didUpdateWidget(covariant _RangeeComptes ancien) {
+    super.didUpdateWidget(ancien);
+    if (!_positionne) _planifier();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _planifier() {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _positionner());
+  }
+
+  /// Amène le compte choisi dans la vue (une seule fois, à l'ouverture).
+  void _positionner() {
+    if (!mounted || _positionne || !_ctrl.hasClients) return;
+    final i = widget.comptes.indexWhere((c) => c.id == widget.selection);
+    if (i < 0) return;
+    _positionne = true;
+    final cible = i * (_largeur + _ecart) - 24;
+    _ctrl.jumpTo(math.max(0.0, math.min(cible, _ctrl.position.maxScrollExtent)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 112,
+      child: ListView.separated(
+        controller: _ctrl,
+        scrollDirection: Axis.horizontal,
+        clipBehavior: widget.debordement ? Clip.none : Clip.hardEdge,
+        padding: EdgeInsets.symmetric(horizontal: widget.margeH),
+        itemCount: widget.comptes.length,
+        separatorBuilder: (context, index) => const SizedBox(width: _ecart),
+        itemBuilder: (context, i) {
+          final c = widget.comptes[i];
+          return _CarteCompte(
+            compte: c,
+            largeur: _largeur,
+            selectionne: c.id == widget.selection,
+            desactive: c.id == widget.desactive,
+            onTap: () => widget.onChoisir(c.id),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Carte d'un compte : icône, nom et solde. Le compte choisi passe en
+/// dégradé brun avec une coche.
+class _CarteCompte extends StatelessWidget {
+  const _CarteCompte({
+    required this.compte,
+    required this.largeur,
+    required this.selectionne,
+    required this.desactive,
+    required this.onTap,
+  });
+
+  final AccountBalance compte;
+  final double largeur;
+  final bool selectionne;
+  final bool desactive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    const duree = Duration(milliseconds: 240);
+    final surFond = selectionne ? p.surPrincipal : p.texte;
+    final negatif = compte.balance < 0;
+
+    return Opacity(
+      opacity: desactive ? 0.38 : 1,
+      child: SizedBox(
+        width: largeur,
+        child: AnimatedContainer(
+          duration: duree,
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            gradient: selectionne
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      p.principal,
+                      Color.lerp(p.principal, p.accent, 0.55)!,
+                    ],
+                  )
+                : null,
+            color: selectionne ? null : p.surface,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: selectionne ? Colors.transparent : p.bordure,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (selectionne ? p.principal : p.texte)
+                    .withValues(alpha: selectionne ? 0.28 : 0.06),
+                blurRadius: selectionne ? 18 : 10,
+                offset: Offset(0, selectionne ? 8 : 4),
+              ),
+            ],
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(22),
+              onTap: desactive ? null : onTap,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        PastilleEmoji(emojiCompte(compte.type), taille: 38),
+                        const Spacer(),
+                        AnimatedSwitcher(
+                          duration: duree,
+                          child: selectionne
+                              ? Icon(
+                                  Icons.check_circle_rounded,
+                                  key: const ValueKey<String>('coche'),
+                                  size: 22,
+                                  color: surFond,
+                                )
+                              : const SizedBox(
+                                  key: ValueKey<String>('vide'),
+                                  width: 22,
+                                  height: 22,
+                                ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          compte.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14.5,
+                            color: surFond,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          formatAr(compte.balance),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: AppTheme.fontTitre,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14.5,
+                            color: negatif
+                                ? (selectionne
+                                    ? const Color(0xFFFFD2C4)
+                                    : p.depense)
+                                : surFond,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bandeau « solde actuel » ou « solde après opération ».
+class _BandeauSolde extends StatelessWidget {
+  const _BandeauSolde({
+    required this.libelle,
+    required this.montant,
+    required this.alerte,
+  });
+
+  final String libelle;
+  final int montant;
+  final bool alerte;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    final couleur = alerte ? p.depense : p.texte;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      decoration: BoxDecoration(
+        color: alerte
+            ? p.depense.withValues(alpha: 0.10)
+            : p.surfaceDouce,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            alerte
+                ? Icons.warning_amber_rounded
+                : Icons.account_balance_wallet_outlined,
+            size: 20,
+            color: alerte ? p.depense : p.texteDoux,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              libelle,
+              style: TextStyle(fontSize: 13, color: p.texteDoux),
+            ),
+          ),
+          Text(
+            formatAr(montant),
+            style: TextStyle(
+              fontFamily: AppTheme.fontTitre,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: couleur,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Petite étiquette au-dessus d'une rangée du panneau de transfert.
+class _EtiquettePanneau extends StatelessWidget {
+  const _EtiquettePanneau({required this.icone, required this.libelle});
+
+  final IconData icone;
+  final String libelle;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: p.principal.withValues(alpha: 0.12),
+            ),
+            child: Icon(icone, size: 15, color: p.principal),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            libelle,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: p.texteDoux,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bouton rond qui inverse départ et arrivée (il fait un demi-tour).
+class _BoutonEchange extends StatefulWidget {
+  const _BoutonEchange({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  State<_BoutonEchange> createState() => _BoutonEchangeState();
+}
+
+class _BoutonEchangeState extends State<_BoutonEchange> {
+  double _tours = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    return Tooltip(
+      message: tr('Inverser'),
+      child: AnimatedRotation(
+        turns: _tours,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutBack,
+        child: Material(
+          color: p.surface,
+          elevation: 2,
+          shadowColor: p.principal.withValues(alpha: 0.3),
+          shape: CircleBorder(side: BorderSide(color: p.bordure)),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () {
+              setState(() => _tours += 0.5);
+              widget.onTap();
+            },
+            child: SizedBox(
+              width: 40,
+              height: 40,
+              child: Icon(Icons.swap_vert_rounded, size: 22, color: p.principal),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Ligne du récapitulatif de transfert : solde avant, puis après.
+class _LigneTransfert extends StatelessWidget {
+  const _LigneTransfert({
+    required this.nom,
+    required this.avant,
+    required this.apres,
+  });
+
+  final String nom;
+  final int avant;
+  final int? apres;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    final negatif = apres != null && apres! < 0;
+    final texte = apres == null
+        ? formatAr(avant)
+        : '${formatAr(avant)} → ${formatAr(apres!)}';
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            nom,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            texte,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontFamily: AppTheme.fontTitre,
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: negatif ? p.depense : p.texteDoux,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ═══════════════════════ Éléments de la section Catégorie ═══════════════════════
 
 /// Bouton « + » rond, en dégradé brun, posé à côté du mot « Catégorie ».
 class _BoutonPlus extends StatelessWidget {
