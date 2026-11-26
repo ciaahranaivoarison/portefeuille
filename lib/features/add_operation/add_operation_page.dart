@@ -10,10 +10,8 @@ import '../../data/operations.dart';
 import '../../data/repository.dart';
 import '../../widgets/choix.dart';
 import '../../widgets/confirm_dialog.dart';
-import '../../widgets/tuile_categorie.dart';
 import '../../widgets/ui.dart';
-import '../categories/category_form_page.dart';
-import '../categories/options_categorie.dart';
+import 'choix_categorie.dart';
 
 class AddOperationPage extends StatefulWidget {
   const AddOperationPage({super.key, this.transaction});
@@ -38,6 +36,14 @@ class _AddOperationPageState extends State<AddOperationPage> {
   final _noteCtrl = TextEditingController();
 
   bool get _modification => widget.transaction != null;
+
+  /// Catégorie actuellement choisie (null si aucune).
+  CategoryInfo? get _categorieChoisie {
+    for (final c in _categories) {
+      if (c.id == _categorieId) return c;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -97,40 +103,20 @@ class _AddOperationPageState extends State<AddOperationPage> {
     _chargerCategories();
   }
 
-  /// Ouvre le formulaire de catégorie, puis sélectionne la nouvelle.
-  Future<void> _nouvelleCategorie() async {
-    final avant = _categories.map((c) => c.id).toSet();
-    final cree = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => CategoryFormPage(type: _type)),
+  /// Ouvre la feuille de choix : recherche, sélection, puis « OK ».
+  Future<void> _choisirCategorie() async {
+    final choisie = await choisirCategorie(
+      context,
+      type: _type,
+      selectionId: _categorieId,
     );
-    if (cree != true || !mounted) return;
-    final categories = await Categories.instance.lister(_type);
-    if (!mounted) return;
-    final nouvelles = categories.where((c) => !avant.contains(c.id)).toList();
-    setState(() {
-      _categories = categories;
-      if (nouvelles.isNotEmpty) _categorieId = nouvelles.last.id;
-    });
-  }
-
-  /// Options d'une catégorie : choisir, voir, modifier ou supprimer.
-  Future<void> _ouvrirCategorie(CategoryInfo c) async {
-    final resultat = await gererCategorie(context, c, avecChoix: true);
-    if (!mounted || resultat == null) return;
-
-    if (resultat == ResultatCategorie.choisie) {
-      setState(() => _categorieId = c.id);
-      return;
-    }
-
-    // Modifiée ou supprimée : on recharge la liste.
+    if (choisie == null || !mounted) return;
+    // La feuille a pu créer une catégorie : on recharge la liste.
     final categories = await Categories.instance.lister(_type);
     if (!mounted) return;
     setState(() {
       _categories = categories;
-      if (resultat == ResultatCategorie.supprimee && _categorieId == c.id) {
-        _categorieId = null;
-      }
+      _categorieId = choisie.id;
     });
   }
 
@@ -211,42 +197,72 @@ class _AddOperationPageState extends State<AddOperationPage> {
         _ => p.principal,
       };
 
-  /// Titre « Catégorie » avec une simple icône « + » à droite.
-  Widget _titreCategorie() {
-    return Row(
+  /// Le mot « Catégorie » avec un petit « + », puis la catégorie choisie.
+  Widget _sectionCategorie(Palette p) {
+    final choisie = _categorieChoisie;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Expanded(child: TitreSection('Catégorie')),
-        Padding(
-          padding: const EdgeInsets.only(top: 14),
-          child: IconButton(
-            tooltip: tr('Nouvelle catégorie'),
-            icon: const Icon(Icons.add_rounded),
-            onPressed: _nouvelleCategorie,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Grille des catégories : mêmes tuiles que dans Paramètres, Catégories.
-  Widget _grilleCategories() {
-    return LayoutBuilder(
-      builder: (context, contraintes) {
-        final largeur = (contraintes.maxWidth - 12) / 2;
-        return Wrap(
-          spacing: 12,
-          runSpacing: 12,
+        Row(
           children: [
-            for (final c in _categories)
-              TuileCategorie(
-                info: c,
-                largeur: largeur,
-                selectionnee: _categorieId == c.id,
-                onTap: () => _ouvrirCategorie(c),
-              ),
+            const TitreSection('Catégorie'),
+            const SizedBox(width: 8),
+            Padding(
+              padding: const EdgeInsets.only(top: 14),
+              child: _PetitPlus(onTap: _choisirCategorie),
+            ),
           ],
-        );
-      },
+        ),
+        if (choisie != null)
+          Card(
+            child: InkWell(
+              onTap: _choisirCategorie,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    PastilleEmoji(emojiCategorie(choisie.name), taille: 40),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            choisie.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            choisie.isDefault ? 'Par défaut' : 'Personnalisée',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: p.accent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      'Changer',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: p.principal,
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: p.texteDoux),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -393,10 +409,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
                   ),
               ],
             ),
-          ] else ...[
-            _titreCategorie(),
-            _grilleCategories(),
-          ],
+          ] else
+            _sectionCategorie(p),
           const TitreSection('Date'),
           Card(
             child: InkWell(
@@ -440,6 +454,34 @@ class _AddOperationPageState extends State<AddOperationPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Petit bouton « + » rond, posé à côté du mot « Catégorie ».
+class _PetitPlus extends StatelessWidget {
+  const _PetitPlus({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    return Tooltip(
+      message: tr('Choisir une catégorie'),
+      child: Material(
+        color: p.surface,
+        shape: CircleBorder(side: BorderSide(color: p.bordure)),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: SizedBox(
+            width: 34,
+            height: 34,
+            child: Icon(Icons.add_rounded, size: 20, color: p.principal),
+          ),
+        ),
       ),
     );
   }
