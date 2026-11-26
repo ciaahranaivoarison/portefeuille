@@ -198,8 +198,8 @@ class _AddOperationPageState extends State<AddOperationPage> {
         _ => p.principal,
       };
 
-  /// Le mot « Catégorie » avec un petit « + », puis la catégorie choisie.
-  Widget _sectionCategorie(Palette p) {
+  /// Le mot « Catégorie » avec son bouton « + », puis la catégorie choisie.
+  Widget _sectionCategorie() {
     final choisie = _categorieChoisie;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,62 +207,16 @@ class _AddOperationPageState extends State<AddOperationPage> {
         Row(
           children: [
             const TitreSection('Catégorie'),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             Padding(
-              padding: const EdgeInsets.only(top: 14),
-              child: _PetitPlus(onTap: _choisirCategorie),
+              padding: const EdgeInsets.only(top: 12),
+              child: _BoutonPlus(onTap: _choisirCategorie),
             ),
           ],
         ),
         if (choisie != null)
-          Card(
-            child: InkWell(
-              onTap: _choisirCategorie,
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    PastilleCategorie(choisie.name, taille: 40),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            choisie.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            choisie.isDefault ? 'Par défaut' : 'Personnalisée',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              color: p.accent,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      'Changer',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: p.principal,
-                      ),
-                    ),
-                    Icon(Icons.chevron_right, color: p.texteDoux),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          _CategorieChoisie(info: choisie, onTap: _choisirCategorie),
+        const SizedBox(height: 4),
       ],
     );
   }
@@ -411,7 +365,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
               ],
             ),
           ] else
-            _sectionCategorie(p),
+            _sectionCategorie(),
           const TitreSection('Date'),
           Card(
             child: InkWell(
@@ -447,12 +401,11 @@ class _AddOperationPageState extends State<AddOperationPage> {
             ),
           ),
           const SizedBox(height: 28),
-          FilledButton(
-            onPressed: _enregistrer,
-            style: FilledButton.styleFrom(backgroundColor: couleur),
-            child: Text(
-              _modification ? 'Enregistrer les modifications' : 'Enregistrer',
-            ),
+          _BoutonEnregistrer(
+            libelle: _modification
+                ? 'Enregistrer les modifications'
+                : 'Enregistrer',
+            onTap: _enregistrer,
           ),
         ],
       ),
@@ -460,9 +413,9 @@ class _AddOperationPageState extends State<AddOperationPage> {
   }
 }
 
-/// Petit bouton « + » rond, posé à côté du mot « Catégorie ».
-class _PetitPlus extends StatelessWidget {
-  const _PetitPlus({required this.onTap});
+/// Bouton « + » rond, en dégradé brun, posé à côté du mot « Catégorie ».
+class _BoutonPlus extends StatelessWidget {
+  const _BoutonPlus({required this.onTap});
 
   final VoidCallback onTap;
 
@@ -471,16 +424,226 @@ class _PetitPlus extends StatelessWidget {
     final p = context.pal;
     return Tooltip(
       message: tr('Choisir une catégorie'),
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [p.principal, Color.lerp(p.principal, p.accent, 0.55)!],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: p.principal.withValues(alpha: 0.30),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Icon(Icons.add_rounded, size: 22, color: p.surPrincipal),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Carte de la catégorie choisie : teintée de sa couleur, avec sa pastille,
+/// son nom, sa mention et un bouton « Changer ».
+class _CategorieChoisie extends StatelessWidget {
+  const _CategorieChoisie({required this.info, required this.onTap});
+
+  final CategoryInfo info;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    final teinte = teinteCategorie(context, info.name);
+
+    return Container(
+      margin: const EdgeInsets.only(top: 2),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.alphaBlend(teinte.withValues(alpha: 0.14), p.surface),
+            p.surface,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: teinte.withValues(alpha: 0.32)),
+        boxShadow: [
+          BoxShadow(
+            color: teinte.withValues(alpha: 0.14),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(23),
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: onTap,
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -26,
+                  top: -26,
+                  child: Container(
+                    width: 106,
+                    height: 106,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: teinte.withValues(alpha: 0.08),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      PastilleCategorie(info.name, taille: 54),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              info.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: AppTheme.fontTitre,
+                                fontSize: 19,
+                                fontWeight: FontWeight.w600,
+                                color: p.texte,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 9,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: p.accent.withValues(alpha: 0.13),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                info.isDefault ? 'Par défaut' : 'Personnalisée',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: p.accent,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: p.principal.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.swap_horiz_rounded,
+                              size: 16,
+                              color: p.principal,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Changer',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: p.principal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bouton « Enregistrer » : dégradé brun-caramel du thème, en pilule.
+class _BoutonEnregistrer extends StatelessWidget {
+  const _BoutonEnregistrer({required this.libelle, required this.onTap});
+
+  final String libelle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    return Container(
+      height: 58,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [p.principal, Color.lerp(p.principal, p.accent, 0.5)!],
+        ),
+        borderRadius: BorderRadius.circular(29),
+        boxShadow: [
+          BoxShadow(
+            color: p.principal.withValues(alpha: 0.30),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Material(
-        color: p.surface,
-        shape: CircleBorder(side: BorderSide(color: p.bordure)),
+        type: MaterialType.transparency,
         child: InkWell(
-          customBorder: const CircleBorder(),
+          borderRadius: BorderRadius.circular(29),
           onTap: onTap,
-          child: SizedBox(
-            width: 34,
-            height: 34,
-            child: Icon(Icons.add_rounded, size: 20, color: p.principal),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_rounded, size: 22, color: p.surPrincipal),
+                const SizedBox(width: 8),
+                Text(
+                  libelle,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: p.surPrincipal,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
