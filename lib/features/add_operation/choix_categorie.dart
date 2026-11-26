@@ -4,9 +4,8 @@ import 'package:flutter/material.dart' hide Text;
 import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
-import '../../core/emojis.dart';
 import '../../data/categories.dart';
-import '../../widgets/ui.dart';
+import '../../widgets/pastille_categorie.dart';
 import '../categories/category_form_page.dart';
 
 /// Ouvre la feuille de choix d'une catégorie : recherche, sélection, puis
@@ -292,31 +291,42 @@ class _LigneChoix extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.pal;
+    final teinte = teinteCategorie(context, info.name);
+    const duree = Duration(milliseconds: 220);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: duree,
+        curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
           color: selectionnee
-              ? Color.alphaBlend(p.principal.withValues(alpha: 0.10), p.surface)
+              ? Color.alphaBlend(teinte.withValues(alpha: 0.09), p.surface)
               : p.surface,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: selectionnee ? p.principal : p.bordure,
             width: selectionnee ? 2 : 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: teinte.withValues(alpha: selectionnee ? 0.20 : 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Material(
           type: MaterialType.transparency,
           child: InkWell(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(22),
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.fromLTRB(12, 12, 14, 12),
               child: Row(
                 children: [
-                  PastilleEmoji(emojiCategorie(info.name), taille: 40),
-                  const SizedBox(width: 12),
+                  PastilleCategorie(info.name, taille: 46),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,28 +336,59 @@ class _LigneChoix extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
+                            fontFamily: AppTheme.fontTitre,
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.w600,
+                            height: 1.15,
                             color: p.texte,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          info.isDefault ? 'Par défaut' : 'Personnalisée',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: p.accent,
-                          ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: info.isDefault ? p.accent : teinte,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              info.isDefault ? 'Par défaut' : 'Personnalisée',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: p.texteDoux,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  Icon(
-                    selectionnee
-                        ? Icons.check_circle_rounded
-                        : Icons.circle_outlined,
-                    color: selectionnee ? p.principal : p.bordure,
+                  AnimatedContainer(
+                    duration: duree,
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: selectionnee ? p.principal : Colors.transparent,
+                      border: Border.all(
+                        color: selectionnee ? p.principal : p.bordure,
+                        width: 1.6,
+                      ),
+                    ),
+                    child: AnimatedOpacity(
+                      duration: duree,
+                      opacity: selectionnee ? 1 : 0,
+                      child: Icon(
+                        Icons.check_rounded,
+                        size: 17,
+                        color: p.surPrincipal,
+                      ),
+                    ),
                   ),
                 ],
               ),

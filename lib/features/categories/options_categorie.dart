@@ -2,10 +2,9 @@ import 'package:flutter/material.dart' hide Text;
 import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
-import '../../core/emojis.dart';
 import '../../data/categories.dart';
 import '../../widgets/confirm_dialog.dart';
-import '../../widgets/ui.dart';
+import '../../widgets/pastille_categorie.dart';
 import 'category_form_page.dart';
 import 'operations_categorie_page.dart';
 
@@ -92,7 +91,7 @@ class _FeuilleOptions extends StatelessWidget {
           children: [
             Row(
               children: [
-                PastilleEmoji(emojiCategorie(info.name), taille: 56),
+                PastilleCategorie(info.name, taille: 56),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(

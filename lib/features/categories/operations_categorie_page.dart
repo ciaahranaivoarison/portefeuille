@@ -2,12 +2,11 @@ import 'package:flutter/material.dart' hide Text;
 import 'package:gestion_argent/widgets/texte.dart';
 
 import '../../core/app_theme.dart';
-import '../../core/emojis.dart';
 import '../../core/formats.dart';
 import '../../data/categories.dart';
 import '../../data/operations.dart';
 import '../../widgets/etat_vide.dart';
-import '../../widgets/ui.dart';
+import '../../widgets/pastille_categorie.dart';
 
 /// Liste des opérations d'une catégorie, avec leur total.
 class OperationsCategoriePage extends StatelessWidget {
@@ -52,7 +51,7 @@ class OperationsCategoriePage extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: Row(
                     children: [
-                      PastilleEmoji(emojiCategorie(info.name), taille: 50),
+                      PastilleCategorie(info.name, taille: 50),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(

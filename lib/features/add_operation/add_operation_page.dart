@@ -10,6 +10,7 @@ import '../../data/operations.dart';
 import '../../data/repository.dart';
 import '../../widgets/choix.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/pastille_categorie.dart';
 import '../../widgets/ui.dart';
 import 'choix_categorie.dart';
 
@@ -221,7 +222,7 @@ class _AddOperationPageState extends State<AddOperationPage> {
                 padding: const EdgeInsets.all(14),
                 child: Row(
                   children: [
-                    PastilleEmoji(emojiCategorie(choisie.name), taille: 40),
+                    PastilleCategorie(choisie.name, taille: 40),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
