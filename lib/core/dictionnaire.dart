@@ -521,6 +521,7 @@ final Map<String, (String, String)> dictionnaire = {
   ),
   'Cette action est irréversible.': ('This action cannot be undone.', 'Tsy azo averina ity hetsika ity.'),
   'Enregistrer la sauvegarde': ('Save the backup', 'Tehirizina ny tahiry'),
+  'Les plus utilisées': ('Most used', 'Be indrindra ampiasaina'),
   'Compte à créditer': ('Account to credit', 'Kaonty hampidirana vola'),
   'Compte à débiter': ('Account to debit', 'Kaonty hanalana vola'),
   'Solde actuel': ('Current balance', 'Vola ao ankehitriny'),

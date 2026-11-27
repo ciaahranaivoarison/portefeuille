@@ -6,6 +6,7 @@ import 'package:gestion_argent/widgets/texte.dart';
 import '../../core/app_theme.dart';
 import '../../data/categories.dart';
 import '../../widgets/pastille_categorie.dart';
+import '../../widgets/pictogramme.dart';
 import '../categories/category_form_page.dart';
 
 /// Ouvre la feuille de choix d'une catégorie : recherche, sélection, puis
@@ -23,8 +24,8 @@ Future<CategoryInfo?> choisirCategorie(
     builder: (ctx) {
       final clavier = MediaQuery.viewInsetsOf(ctx).bottom;
       final hauteur = math.max(
-        320.0,
-        MediaQuery.sizeOf(ctx).height * 0.85 - clavier,
+        340.0,
+        MediaQuery.sizeOf(ctx).height * 0.9 - clavier,
       );
       return Padding(
         padding: EdgeInsets.only(bottom: clavier),
@@ -48,6 +49,30 @@ String _normaliser(String texte) {
     sortie.write(i >= 0 ? sans[i] : c);
   }
   return sortie.toString();
+}
+
+/// Dégradé de la couleur d'une catégorie, assez foncé pour un texte blanc.
+List<Color> _degrade(Color teinte) => [
+      Color.lerp(teinte, AppColors.cacao, 0.22)!,
+      Color.lerp(teinte, AppColors.cacao, 0.55)!,
+    ];
+
+/// Icône d'une catégorie (ou son initiale si le nom n'est pas reconnu).
+Widget _glyphe(String nom, Color couleur, double taille) {
+  final icone = iconeCategorie(nom);
+  if (icone.startsWith('lettre-')) {
+    return Text(
+      icone.substring(7).toUpperCase(),
+      style: TextStyle(
+        fontFamily: AppTheme.fontTitre,
+        fontSize: taille * 0.95,
+        fontWeight: FontWeight.w700,
+        height: 1,
+        color: couleur,
+      ),
+    );
+  }
+  return Pictogramme(icone, taille: taille, couleur: couleur);
 }
 
 class _FeuilleChoix extends StatefulWidget {
@@ -108,6 +133,13 @@ class _FeuilleChoixState extends State<_FeuilleChoix> {
         .toList();
   }
 
+  /// Les catégories les plus utilisées (au moins une opération).
+  List<CategoryInfo> get _frequentes {
+    final liste = _categories.where((c) => c.usage > 0).toList()
+      ..sort((a, b) => b.usage.compareTo(a.usage));
+    return liste.take(5).toList();
+  }
+
   CategoryInfo? get _choisie {
     for (final c in _categories) {
       if (c.id == _selection) return c;
@@ -153,19 +185,27 @@ class _FeuilleChoixState extends State<_FeuilleChoix> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off_rounded, size: 40, color: p.texteDoux),
-            const SizedBox(height: 10),
+            Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: p.surfaceDouce,
+              ),
+              child: Icon(Icons.search_off_rounded, size: 36, color: p.texteDoux),
+            ),
+            const SizedBox(height: 14),
             Text(
               'Aucune catégorie trouvée.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: p.texteDoux),
+              style: TextStyle(color: p.texteDoux, fontSize: 15),
             ),
             if (saisie.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              OutlinedButton.icon(
-                onPressed: _creerDepuisRecherche,
-                icon: const Icon(Icons.add_rounded),
-                label: Text('${tr('Créer')} « $saisie »'),
+              const SizedBox(height: 18),
+              _BoutonDegrade(
+                icone: Icons.add_rounded,
+                libelle: '${tr('Créer')} « $saisie »',
+                onTap: _creerDepuisRecherche,
               ),
             ],
           ],
@@ -179,36 +219,100 @@ class _FeuilleChoixState extends State<_FeuilleChoix> {
     final p = context.pal;
     final saisie = _rechercheCtrl.text.trim();
     final filtrees = _filtrees;
+    final frequentes = _frequentes;
     final choisie = _choisie;
+    final depenses = widget.type == 'expense';
+    final couleurType = depenses ? p.depense : p.revenu;
+
+    final bordureRecherche = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(30),
+      borderSide: BorderSide(color: p.bordure),
+    );
 
     return SafeArea(
       child: Column(
         children: [
+          // En-tête : titre, type et bouton de création
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 8, 8),
+            padding: const EdgeInsets.fromLTRB(22, 0, 10, 4),
             child: Row(
               children: [
                 Expanded(
-                  child: Text(
-                    'Choisir une catégorie',
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontTitre,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                      color: p.texte,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Choisir une catégorie',
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontTitre,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          color: p.texte,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 11,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: couleurType.withValues(alpha: 0.13),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: couleurType,
+                              ),
+                            ),
+                            const SizedBox(width: 7),
+                            Text(
+                              depenses ? 'Dépenses' : 'Revenus',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: couleurType,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Tooltip(
+                  message: tr('Nouvelle catégorie'),
+                  child: Material(
+                    color: p.surfaceDouce,
+                    shape: CircleBorder(side: BorderSide(color: p.bordure)),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: _creerAvecFormulaire,
+                      child: SizedBox(
+                        width: 44,
+                        height: 44,
+                        child: Icon(
+                          Icons.add_rounded,
+                          size: 24,
+                          color: p.principal,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                IconButton(
-                  tooltip: tr('Nouvelle catégorie'),
-                  icon: const Icon(Icons.add_rounded),
-                  onPressed: _creerAvecFormulaire,
-                ),
+                const SizedBox(width: 10),
               ],
             ),
           ),
+          // Recherche en pilule
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
             child: TextField(
               controller: _rechercheCtrl,
               onChanged: (_) => setState(() => _erreur = null),
@@ -224,12 +328,22 @@ class _FeuilleChoixState extends State<_FeuilleChoix> {
                           setState(() => _erreur = null);
                         },
                       ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 14,
+                ),
+                border: bordureRecherche,
+                enabledBorder: bordureRecherche,
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: p.principal, width: 1.6),
+                ),
               ),
             ),
           ),
           if (_erreur != null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+              padding: const EdgeInsets.fromLTRB(26, 8, 24, 0),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -242,16 +356,56 @@ class _FeuilleChoixState extends State<_FeuilleChoix> {
                 ),
               ),
             ),
-          const SizedBox(height: 8),
+          // Les plus utilisées
+          if (saisie.isEmpty && frequentes.length >= 2) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 14, 24, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'LES PLUS UTILISÉES',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    letterSpacing: 1.3,
+                    fontWeight: FontWeight.w700,
+                    color: p.texteDoux,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 46,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: frequentes.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                itemBuilder: (context, i) => _PuceFrequente(
+                  info: frequentes[i],
+                  selectionnee: frequentes[i].id == _selection,
+                  onTap: () => setState(() => _selection = frequentes[i].id),
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 6),
+          // Grille de bulles
           Expanded(
             child: _chargement
                 ? const Center(child: CircularProgressIndicator())
                 : filtrees.isEmpty
                     ? _vide(p, saisie)
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                    : GridView.builder(
+                        padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: 4,
+                          childAspectRatio: 0.82,
+                        ),
                         itemCount: filtrees.length,
-                        itemBuilder: (context, i) => _LigneChoix(
+                        itemBuilder: (context, i) => _Bulle(
                           info: filtrees[i],
                           selectionnee: filtrees[i].id == _selection,
                           onTap: () =>
@@ -261,14 +415,11 @@ class _FeuilleChoixState extends State<_FeuilleChoix> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: choisie == null
-                    ? null
-                    : () => Navigator.of(context).pop(choisie),
-                child: const Text('OK'),
-              ),
+            child: _BoutonDegrade(
+              icone: Icons.check_rounded,
+              libelle: 'OK',
+              actif: choisie != null,
+              onTap: () => Navigator.of(context).pop(choisie),
             ),
           ),
         ],
@@ -277,8 +428,10 @@ class _FeuilleChoixState extends State<_FeuilleChoix> {
   }
 }
 
-class _LigneChoix extends StatelessWidget {
-  const _LigneChoix({
+/// Une catégorie en bulle : grand cercle coloré avec son icône, nom dessous.
+/// La bulle choisie se remplit en dégradé, grossit et reçoit une coche.
+class _Bulle extends StatelessWidget {
+  const _Bulle({
     required this.info,
     required this.selectionnee,
     required this.onTap,
@@ -292,106 +445,228 @@ class _LigneChoix extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.pal;
     final teinte = teinteCategorie(context, info.name);
-    const duree = Duration(milliseconds: 220);
+    const duree = Duration(milliseconds: 260);
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: AnimatedContainer(
-        duration: duree,
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          color: selectionnee
-              ? Color.alphaBlend(teinte.withValues(alpha: 0.09), p.surface)
-              : p.surface,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: selectionnee ? p.principal : p.bordure,
-            width: selectionnee ? 2 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: teinte.withValues(alpha: selectionnee ? 0.20 : 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(22),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 14, 12),
-              child: Row(
+    return InkWell(
+      borderRadius: BorderRadius.circular(22),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedScale(
+              scale: selectionnee ? 1.08 : 1.0,
+              duration: duree,
+              curve: Curves.easeOutBack,
+              child: Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  PastilleCategorie(info.name, taille: 46),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          info.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontTitre,
-                            fontSize: 16.5,
-                            fontWeight: FontWeight.w600,
-                            height: 1.15,
-                            color: p.texte,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: info.isDefault ? p.accent : teinte,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              info.isDefault ? 'Par défaut' : 'Personnalisée',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                color: p.texteDoux,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
                   AnimatedContainer(
                     duration: duree,
-                    width: 28,
-                    height: 28,
+                    curve: Curves.easeOutCubic,
+                    width: 68,
+                    height: 68,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: selectionnee ? p.principal : Colors.transparent,
-                      border: Border.all(
-                        color: selectionnee ? p.principal : p.bordure,
-                        width: 1.6,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: selectionnee
+                            ? _degrade(teinte)
+                            : [
+                                teinte.withValues(alpha: 0.22),
+                                teinte.withValues(alpha: 0.08),
+                              ],
                       ),
+                      border: Border.all(
+                        color: selectionnee
+                            ? p.principal
+                            : teinte.withValues(alpha: 0.28),
+                        width: selectionnee ? 2.5 : 1,
+                      ),
+                      boxShadow: selectionnee
+                          ? [
+                              BoxShadow(
+                                color: teinte.withValues(alpha: 0.42),
+                                blurRadius: 16,
+                                offset: const Offset(0, 6),
+                              ),
+                            ]
+                          : null,
                     ),
-                    child: AnimatedOpacity(
+                    child: _glyphe(
+                      info.name,
+                      selectionnee ? Colors.white : teinte,
+                      30,
+                    ),
+                  ),
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: AnimatedScale(
+                      scale: selectionnee ? 1.0 : 0.0,
                       duration: duree,
-                      opacity: selectionnee ? 1 : 0,
-                      child: Icon(
-                        Icons.check_rounded,
-                        size: 17,
-                        color: p.surPrincipal,
+                      curve: Curves.easeOutBack,
+                      child: Container(
+                        width: 23,
+                        height: 23,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: p.principal,
+                          border: Border.all(color: p.surface, width: 2),
+                        ),
+                        child: Icon(
+                          Icons.check_rounded,
+                          size: 14,
+                          color: p.surPrincipal,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 9),
+            Text(
+              info.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12.5,
+                height: 1.15,
+                fontWeight: selectionnee ? FontWeight.w700 : FontWeight.w600,
+                color: selectionnee ? p.principal : p.texte,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Petite puce d'accès rapide aux catégories les plus utilisées.
+class _PuceFrequente extends StatelessWidget {
+  const _PuceFrequente({
+    required this.info,
+    required this.selectionnee,
+    required this.onTap,
+  });
+
+  final CategoryInfo info;
+  final bool selectionnee;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    final teinte = teinteCategorie(context, info.name);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      decoration: BoxDecoration(
+        color: selectionnee
+            ? Color.alphaBlend(teinte.withValues(alpha: 0.14), p.surface)
+            : p.surface,
+        borderRadius: BorderRadius.circular(23),
+        border: Border.all(
+          color: selectionnee ? teinte : p.bordure,
+          width: selectionnee ? 1.8 : 1,
+        ),
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(23),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(6, 6, 14, 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PastilleCategorie(info.name, taille: 32),
+                const SizedBox(width: 8),
+                Text(
+                  info.name,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: p.texte,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Grand bouton en dégradé brun (grisé quand il n'est pas actif).
+class _BoutonDegrade extends StatelessWidget {
+  const _BoutonDegrade({
+    required this.icone,
+    required this.libelle,
+    required this.onTap,
+    this.actif = true,
+  });
+
+  final IconData icone;
+  final String libelle;
+  final VoidCallback onTap;
+  final bool actif;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.pal;
+    final premier = actif ? p.principal : p.bordure;
+    final second = actif ? Color.lerp(p.principal, p.accent, 0.5)! : p.bordure;
+    final surBouton = actif ? p.surPrincipal : p.texteDoux;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [premier, second],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: actif
+            ? [
+                BoxShadow(
+                  color: p.principal.withValues(alpha: 0.28),
+                  blurRadius: 16,
+                  offset: const Offset(0, 7),
+                ),
+              ]
+            : null,
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: actif ? onTap : null,
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icone, size: 22, color: surBouton),
+                const SizedBox(width: 8),
+                Text(
+                  libelle,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: surBouton,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
